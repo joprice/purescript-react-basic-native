@@ -14,9 +14,10 @@ import Foreign (Foreign)
 import Foreign.Object (Object)
 import Prim.Row (class Union)
 import React.Basic (JSX)
+import React.Basic.DOM.Internal (CSS)
 
 import React.Basic.Native.Events (NativeSyntheticEvent)
-import React.Basic.Native.Internal (CSS, unsafeCreateNativeElement)
+import React.Basic.Native.Internal (unsafeCreateNativeElement)
 
 
 
@@ -189,16 +190,26 @@ aRTText_ :: Array JSX -> JSX
 aRTText_ children = aRTText { children }
 
 
--- | see <https://facebook.github.io/react-native/docs/activityindicatorios.html#props>
+type AccessibilityState  = {
+    busy  :: (Undefinable  Boolean)
+  , checked  :: (Undefinable  String)
+  , disabled  :: (Undefinable  Boolean)
+  , expanded  :: (Undefinable  Boolean)
+  , selected  :: (Undefinable  Boolean)
+}
+
+
+type AccessibilityValue  = {
+    max  :: (Undefinable  Number)
+  , min  :: (Undefinable  Number)
+  , now  :: (Undefinable  Number)
+  , text  :: (Undefinable  String)
+}
+
+
+-- | see <https://reactnative.dev/docs/activityindicator#props>
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -206,7 +217,7 @@ aRTText_ children = aRTText { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -218,12 +229,11 @@ aRTText_ children = aRTText { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -238,6 +248,8 @@ aRTText_ children = aRTText { children }
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
 -- | - `color`
 -- |        The foreground color of the spinner (default is gray).
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -280,285 +292,9 @@ aRTText_ children = aRTText { children }
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
--- |         __*platform* ios__
--- | - `onAccessibilityTap`
--- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
--- |         __*platform* ios__
--- | - `onLayout`
--- |        Invoked on mount and layout changes with
--- | - `onMagicTap`
--- |        When accessible is true, the system will invoke this function when the user performs the magic tap gesture.
--- |         __*platform* ios__
--- | - `onMoveShouldSetResponder`
--- |        Called for every touch move on the View when it is not the responder: does this view want to "claim" touch responsiveness?
--- | - `onMoveShouldSetResponderCapture`
--- |        onStartShouldSetResponder and onMoveShouldSetResponder are called with a bubbling pattern,
--- |        where the deepest node is called first.
--- |        That means that the deepest component will become responder when multiple Views return true for *ShouldSetResponder handlers.
--- |        This is desirable in most cases, because it makes sure all controls and buttons are usable.
--- |        However, sometimes a parent will want to make sure that it becomes responder.
--- |        This can be handled by using the capture phase.
--- |        Before the responder system bubbles up from the deepest component,
--- |        it will do a capture phase, firing on*ShouldSetResponderCapture.
--- |        So if a parent View wants to prevent the child from becoming responder on a touch start,
--- |        it should have a onStartShouldSetResponderCapture handler which returns true.
--- | - `onResponderEnd`
--- |        If the View returns true and attempts to become the responder, one of the following will happen:
--- | - `onResponderGrant`
--- |        The View is now responding for touch events.
--- |        This is the time to highlight and show the user what is happening
--- | - `onResponderMove`
--- |        If the view is responding, the following handlers can be called:
--- |        The user is moving their finger
--- | - `onResponderReject`
--- |        Something else is the responder right now and will not release it
--- | - `onResponderRelease`
--- |        Fired at the end of the touch, ie "touchUp"
--- | - `onResponderTerminate`
--- |        The responder has been taken from the View.
--- |        Might be taken by other views after a call to onResponderTerminationRequest,
--- |        or might be taken by the OS without asking (happens with control center/ notification center on iOS)
--- | - `onResponderTerminationRequest`
--- |        Something else wants to become responder.
--- |        Should this view release the responder? Returning true allows release
--- | - `onStartShouldSetResponder`
--- |        A view can become the touch responder by implementing the correct negotiation methods.
--- |        There are two methods to ask the view if it wants to become responder:
--- |        Does this view want to become responder on the start of a touch?
--- | - `onStartShouldSetResponderCapture`
--- |        onStartShouldSetResponder and onMoveShouldSetResponder are called with a bubbling pattern,
--- |        where the deepest node is called first.
--- |        That means that the deepest component will become responder when multiple Views return true for *ShouldSetResponder handlers.
--- |        This is desirable in most cases, because it makes sure all controls and buttons are usable.
--- |        However, sometimes a parent will want to make sure that it becomes responder.
--- |        This can be handled by using the capture phase.
--- |        Before the responder system bubbles up from the deepest component,
--- |        it will do a capture phase, firing on*ShouldSetResponderCapture.
--- |        So if a parent View wants to prevent the child from becoming responder on a touch start,
--- |        it should have a onStartShouldSetResponderCapture handler which returns true.
--- | - `pointerEvents`
--- |        In the absence of auto property, none is much like CSS's none value. box-none is as if you had applied the CSS class:
--- |        .box-none {
--- |           pointer-events: none;
--- |        }
--- |        .box-none * {
--- |           pointer-events: all;
--- |        }
--- |        box-only is the equivalent of
--- |        .box-only {
--- |           pointer-events: all;
--- |        }
--- |        .box-only * {
--- |           pointer-events: none;
--- |        }
--- |        But since pointerEvents does not affect layout/appearance, and we are already deviating from the spec by adding additional modes,
--- |        we opt to not include pointerEvents on style. On some platforms, we would need to implement it as a className anyways. Using style or not is an implementation detail of the platform.
--- | - `removeClippedSubviews`
--- |        This is a special performance property exposed by RCTView and is useful for scrolling content when there are many subviews,
--- |        most of which are offscreen. For this property to be effective, it must be applied to a view that contains many subviews that extend outside its bound.
--- |        The subviews must also have overflow: hidden, as should the containing view (or one of its superviews).
--- | - `renderToHardwareTextureAndroid`
--- |        Whether this view should render itself (and all of its children) into a single hardware texture on the GPU.
--- |        On Android, this is useful for animations and interactions that only modify opacity, rotation, translation, and/or scale:
--- |        in those cases, the view doesn't have to be redrawn and display lists don't need to be re-executed. The texture can just be
--- |        re-used and re-composited with different parameters. The downside is that this can use up limited video memory, so this prop should be set back to false at the end of the interaction/animation.
--- | - `shouldRasterizeIOS`
--- |        Whether this view should be rendered as a bitmap before compositing.
--- |        On iOS, this is useful for animations and interactions that do not modify this component's dimensions nor its children;
--- |        for example, when translating the position of a static view, rasterization allows the renderer to reuse a cached bitmap of a static view
--- |        and quickly composite it during each frame.
--- |        Rasterization incurs an off-screen drawing pass and the bitmap consumes memory.
--- |        Test and measure when using this property.
--- | - `size`
--- |        Size of the indicator.
--- |        Small has a height of 20, large has a height of 36.
--- |        enum('small', 'large')
--- | - `testID`
--- |        Used to locate this view in end-to-end tests.
--- | - `tvParallaxMagnification`
--- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 1.0.
--- |         __*platform* ios__
--- | - `tvParallaxProperties`
--- |        *(Apple TV only)* Object with properties to control Apple TV parallax effects.
--- |         __*platform* ios__
--- | - `tvParallaxShiftDistanceX`
--- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 2.0.
--- |         __*platform* ios__
--- | - `tvParallaxShiftDistanceY`
--- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 2.0.
--- |         __*platform* ios__
--- | - `tvParallaxTiltAngle`
--- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 0.05.
--- |         __*platform* ios__
-
-type ActivityIndicatorIOSProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
-  ,  accessibilityElementsHidden :: Boolean
-  ,  accessibilityHint :: String
-  ,  accessibilityIgnoresInvertColors :: Boolean
-  ,  accessibilityLabel :: String
-  ,  accessibilityLiveRegion :: String
-  ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
-  ,  accessibilityViewIsModal :: Boolean
-  ,  accessible :: Boolean
-  ,  animating :: Boolean
-  ,  collapsable :: Boolean
-  ,  color :: String
-  ,  hasTVPreferredFocus :: Boolean
-  ,  hidesWhenStopped :: Boolean
-  ,  hitSlop :: Insets
-  ,  importantForAccessibility :: String
-  ,  isTVSelectable :: Boolean
-  ,  nativeID :: String
-  ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
-  ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 { nativeEvent :: { layout :: { x :: Number, y :: Number, width :: Number, height :: Number } } } Unit)
-  ,  onMagicTap :: (Effect Unit)
-  ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
-  ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
-  ,  onResponderEnd :: (EffectFn1 GestureResponderEvent Unit)
-  ,  onResponderGrant :: (EffectFn1 GestureResponderEvent Unit)
-  ,  onResponderMove :: (EffectFn1 GestureResponderEvent Unit)
-  ,  onResponderReject :: (EffectFn1 GestureResponderEvent Unit)
-  ,  onResponderRelease :: (EffectFn1 GestureResponderEvent Unit)
-  ,  onResponderStart :: (EffectFn1 GestureResponderEvent Unit)
-  ,  onResponderTerminate :: (EffectFn1 GestureResponderEvent Unit)
-  ,  onResponderTerminationRequest :: (EffectFn1 GestureResponderEvent Boolean)
-  ,  onStartShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
-  ,  onStartShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
-  ,  onTouchCancel :: (EffectFn1 GestureResponderEvent Unit)
-  ,  onTouchEnd :: (EffectFn1 GestureResponderEvent Unit)
-  ,  onTouchEndCapture :: (EffectFn1 GestureResponderEvent Unit)
-  ,  onTouchMove :: (EffectFn1 GestureResponderEvent Unit)
-  ,  onTouchStart :: (EffectFn1 GestureResponderEvent Unit)
-  ,  pointerEvents :: String
-  ,  removeClippedSubviews :: Boolean
-  ,  renderToHardwareTextureAndroid :: Boolean
-  ,  shouldRasterizeIOS :: Boolean
-  ,  size :: String
-  ,  style :: CSS
-  ,  testID :: String
-  ,  tvParallaxMagnification :: Number
-  ,  tvParallaxProperties :: { enabled :: Boolean, shiftDistanceX :: Number, shiftDistanceY :: Number, tiltAngle :: Number, magnification :: Number, pressMagnification :: Number, pressDuration :: Number, pressDelay :: Number }
-  ,  tvParallaxShiftDistanceX :: Number
-  ,  tvParallaxShiftDistanceY :: Number
-  ,  tvParallaxTiltAngle :: Number
-  ,  key :: String
-  ,  children :: Array JSX
-  )
-
-
-activityIndicatorIOS
-  :: forall attrs attrs_  
-  . Union attrs attrs_ (ActivityIndicatorIOSProps  )
-  => Record attrs
-  -> JSX
-activityIndicatorIOS props = unsafeCreateNativeElement "ActivityIndicatorIOS" props
- 
-
-activityIndicatorIOS_ :: Array JSX -> JSX
-activityIndicatorIOS_ children = activityIndicatorIOS { children }
-
-
--- | see <https://facebook.github.io/react-native/docs/activityindicator.html#props>
--- | - `accessibilityActions`
--- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
--- | - `accessibilityElementsHidden`
--- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
--- |        are hidden to the screen reader.
--- |         __*platform* ios__
--- | - `accessibilityHint`
--- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
--- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
--- |         __*platform* ios__
--- | - `accessibilityLabel`
--- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
--- |        label is constructed by traversing all the children and accumulating all the Text nodes separated by space.
--- | - `accessibilityLiveRegion`
--- |        Indicates to accessibility services whether the user should be notified when this view changes.
--- |        Works for Android API >= 19 only.
--- |        See http://developer.android.com/reference/android/view/View.html#attr_android:accessibilityLiveRegion for references.
--- |         __*platform* android__
--- | - `accessibilityRole`
--- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
--- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
--- | - `accessibilityViewIsModal`
--- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
--- |         __*platform* ios__
--- | - `accessible`
--- |        When true, indicates that the view is an accessibility element.
--- |        By default, all the touchable elements are accessible.
--- | - `animating`
--- |        Whether to show the indicator (true, the default) or hide it (false).
--- | - `collapsable`
--- |        Views that are only used to layout their children or otherwise don't draw anything
--- |        may be automatically removed from the native hierarchy as an optimization.
--- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
--- | - `color`
--- |        The foreground color of the spinner (default is gray).
--- | - `hasTVPreferredFocus`
--- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
--- |         __*platform* ios__
--- | - `hidesWhenStopped`
--- |        Whether the indicator should hide when not animating (true by default).
--- | - `hitSlop`
--- |        This defines how far a touch event can start away from the view.
--- |        Typical interface guidelines recommend touch targets that are at least
--- |        30 - 40 points/density-independent pixels. If a Touchable view has
--- |        a height of 20 the touchable height can be extended to 40 with
--- |        hitSlop={{top: 10, bottom: 10, left: 0, right: 0}}
--- |        NOTE The touch area never extends past the parent view bounds and
--- |        the Z-index of sibling views always takes precedence if a touch
--- |        hits two overlapping views.
--- | - `importantForAccessibility`
--- |        Controls how view is important for accessibility which is if it fires accessibility events
--- |        and if it is reported to accessibility services that query the screen.
--- |        Works for Android only. See http://developer.android.com/reference/android/R.attr.html#importantForAccessibility for references.
--- |        Possible values:
--- |              'auto' - The system determines whether the view is important for accessibility - default (recommended).
--- |              'yes' - The view is important for accessibility.
--- |              'no' - The view is not important for accessibility.
--- |              'no-hide-descendants' - The view is not important for accessibility, nor are any of its descendant views.
--- | - `isTVSelectable`
--- |        *(Apple TV only)* When set to true, this view will be focusable
--- |        and navigable using the Apple TV remote.
--- |         __*platform* ios__
--- | - `nativeID`
--- |        Used to reference react managed views from native code.
--- | - `needsOffscreenAlphaCompositing`
--- |        Whether this view needs to rendered offscreen and composited with an alpha in order to preserve 100% correct colors and blending behavior.
--- |        The default (false) falls back to drawing the component and its children
--- |        with an alpha applied to the paint used to draw each element instead of rendering the full component offscreen and compositing it back with an alpha value.
--- |        This default may be noticeable and undesired in the case where the View you are setting an opacity on
--- |        has multiple overlapping elements (e.g. multiple overlapping Views, or text and a background).
--- |        Rendering offscreen to preserve correct alpha behavior is extremely expensive
--- |        and hard to debug for non-native developers, which is why it is not turned on by default.
--- |        If you do need to enable this property for an animation,
--- |        consider combining it with renderToHardwareTextureAndroid if the view contents are static (i.e. it doesn't need to be redrawn each frame).
--- |        If that property is enabled, this View will be rendered off-screen once,
--- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
--- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -672,21 +408,21 @@ activityIndicatorIOS_ children = activityIndicatorIOS { children }
 -- |         __*platform* ios__
 
 type ActivityIndicatorProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  animating :: Boolean
   ,  collapsable :: Boolean
-  ,  color :: String
+  ,  color :: ActivityIndicatorPropsColor
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hidesWhenStopped :: Boolean
   ,  hitSlop :: Insets
@@ -694,9 +430,10 @@ type ActivityIndicatorProps  =
   ,  isTVSelectable :: Boolean
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -750,7 +487,7 @@ activityIndicator_ children = activityIndicator { children }
 
 type ButtonProps_optional  = 
   ( accessibilityLabel :: String
-  ,  color :: String
+  ,  color :: ButtonPropsColor
   ,  disabled :: Boolean
   ,  testID :: String
   ,  key :: String
@@ -779,13 +516,6 @@ button props = unsafeCreateNativeElement "Button" props
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -793,7 +523,7 @@ button props = unsafeCreateNativeElement "Button" props
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -805,12 +535,11 @@ button props = unsafeCreateNativeElement "Button" props
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -823,6 +552,8 @@ button props = unsafeCreateNativeElement "Button" props
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
 -- | - `disabled`
 -- |        If true the user won't be able to toggle the checkbox. Default value is false.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -863,8 +594,9 @@ button props = unsafeCreateNativeElement "Button" props
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -980,30 +712,31 @@ button props = unsafeCreateNativeElement "Button" props
 -- |        The value of the checkbox. If true the checkbox will be turned on. Default value is false.
 
 type CheckBoxProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  collapsable :: Boolean
   ,  disabled :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
   ,  isTVSelectable :: Boolean
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
   ,  onChange :: (EffectFn1 Boolean Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -1055,13 +788,6 @@ checkBox_ children = checkBox { children }
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -1069,7 +795,7 @@ checkBox_ children = checkBox { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -1081,12 +807,11 @@ checkBox_ children = checkBox { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -1099,6 +824,8 @@ checkBox_ children = checkBox { children }
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
 -- | - `date`
 -- |        The currently selected date.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -1120,6 +847,13 @@ checkBox_ children = checkBox { children }
 -- |              'yes' - The view is important for accessibility.
 -- |              'no' - The view is not important for accessibility.
 -- |              'no-hide-descendants' - The view is not important for accessibility, nor are any of its descendant views.
+-- | - `initialDate`
+-- |        Provides an initial value that will change when the user starts selecting
+-- |        a date. It is useful for simple use-cases where you do not want to deal
+-- |        with listening to events and updating the date prop to keep the
+-- |        controlled state in sync. The controlled state has known bugs which
+-- |        causes it to go out of sync with native. The initialDate prop is intended
+-- |        to allow you to have native be source of truth.
 -- | - `isTVSelectable`
 -- |        *(Apple TV only)* When set to true, this view will be focusable
 -- |        and navigable using the Apple TV remote.
@@ -1153,8 +887,9 @@ checkBox_ children = checkBox { children }
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -1272,22 +1007,24 @@ checkBox_ children = checkBox { children }
 -- |         __*platform* ios__
 
 type DatePickerIOSProps_optional  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  collapsable :: Boolean
+  ,  date :: JSDate
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
+  ,  initialDate :: JSDate
   ,  isTVSelectable :: Boolean
   ,  locale :: String
   ,  maximumDate :: JSDate
@@ -1296,9 +1033,10 @@ type DatePickerIOSProps_optional  =
   ,  mode :: String
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -1336,13 +1074,6 @@ type DatePickerIOSProps_optional  =
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -1350,7 +1081,7 @@ type DatePickerIOSProps_optional  =
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -1362,12 +1093,11 @@ type DatePickerIOSProps_optional  =
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -1380,6 +1110,8 @@ type DatePickerIOSProps_optional  =
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
 -- | - `date`
 -- |        The currently selected date.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -1401,6 +1133,13 @@ type DatePickerIOSProps_optional  =
 -- |              'yes' - The view is important for accessibility.
 -- |              'no' - The view is not important for accessibility.
 -- |              'no-hide-descendants' - The view is not important for accessibility, nor are any of its descendant views.
+-- | - `initialDate`
+-- |        Provides an initial value that will change when the user starts selecting
+-- |        a date. It is useful for simple use-cases where you do not want to deal
+-- |        with listening to events and updating the date prop to keep the
+-- |        controlled state in sync. The controlled state has known bugs which
+-- |        causes it to go out of sync with native. The initialDate prop is intended
+-- |        to allow you to have native be source of truth.
 -- | - `isTVSelectable`
 -- |        *(Apple TV only)* When set to true, this view will be focusable
 -- |        and navigable using the Apple TV remote.
@@ -1434,8 +1173,9 @@ type DatePickerIOSProps_optional  =
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -1553,8 +1293,7 @@ type DatePickerIOSProps_optional  =
 -- |         __*platform* ios__
 
 type DatePickerIOSProps_required   optional = 
-  ( date :: JSDate
-  ,  onDateChange :: (EffectFn1 JSDate Unit)
+  ( onDateChange :: (EffectFn1 JSDate Unit)
   | optional
   )
 
@@ -1573,13 +1312,6 @@ foreign import data DocumentSelectionState :: Type
 -- |  __*see* DrawerLayoutAndroid.android.js__
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -1587,7 +1319,7 @@ foreign import data DocumentSelectionState :: Type
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -1599,12 +1331,11 @@ foreign import data DocumentSelectionState :: Type
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -1635,10 +1366,13 @@ foreign import data DocumentSelectionState :: Type
 -- |           closed programmatically (openDrawer/closeDrawer).
 -- | - `drawerPosition`
 -- |        Specifies the side of the screen from which the drawer will slide in.
--- |        enum(DrawerLayoutAndroid.positions.Left, DrawerLayoutAndroid.positions.Right)
+-- |        - 'left' (the default)
+-- |        - 'right'
 -- | - `drawerWidth`
 -- |        Specifies the width of the drawer, more precisely the width of the
 -- |        view that be pulled in from the edge of the window.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -1683,8 +1417,9 @@ foreign import data DocumentSelectionState :: Type
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -1817,23 +1552,23 @@ foreign import data DocumentSelectionState :: Type
 -- |         __*platform* ios__
 
 type DrawerLayoutAndroidProps_optional  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  collapsable :: Boolean
-  ,  drawerBackgroundColor :: String
+  ,  drawerBackgroundColor :: DrawerLayoutAndroidPropsDrawerBackgroundColor
   ,  drawerLockMode :: String
-  ,  drawerPosition :: Number
+  ,  drawerPosition :: String
   ,  drawerWidth :: Number
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
@@ -1841,13 +1576,14 @@ type DrawerLayoutAndroidProps_optional  =
   ,  keyboardDismissMode :: String
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
   ,  onDrawerClose :: (Effect Unit)
   ,  onDrawerOpen :: (Effect Unit)
   ,  onDrawerSlide :: (EffectFn1 DrawerSlideEvent Unit)
   ,  onDrawerStateChanged :: (EffectFn1 String Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -1870,7 +1606,7 @@ type DrawerLayoutAndroidProps_optional  =
   ,  removeClippedSubviews :: Boolean
   ,  renderToHardwareTextureAndroid :: Boolean
   ,  shouldRasterizeIOS :: Boolean
-  ,  statusBarBackgroundColor :: String
+  ,  statusBarBackgroundColor :: DrawerLayoutAndroidPropsStatusBarBackgroundColor
   ,  style :: CSS
   ,  testID :: String
   ,  tvParallaxMagnification :: Number
@@ -1885,13 +1621,6 @@ type DrawerLayoutAndroidProps_optional  =
 -- |  __*see* DrawerLayoutAndroid.android.js__
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -1899,7 +1628,7 @@ type DrawerLayoutAndroidProps_optional  =
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -1911,12 +1640,11 @@ type DrawerLayoutAndroidProps_optional  =
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -1947,10 +1675,13 @@ type DrawerLayoutAndroidProps_optional  =
 -- |           closed programmatically (openDrawer/closeDrawer).
 -- | - `drawerPosition`
 -- |        Specifies the side of the screen from which the drawer will slide in.
--- |        enum(DrawerLayoutAndroid.positions.Left, DrawerLayoutAndroid.positions.Right)
+-- |        - 'left' (the default)
+-- |        - 'right'
 -- | - `drawerWidth`
 -- |        Specifies the width of the drawer, more precisely the width of the
 -- |        view that be pulled in from the edge of the window.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -1995,8 +1726,9 @@ type DrawerLayoutAndroidProps_optional  =
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -2152,17 +1884,14 @@ type DrawerSlideEvent = NativeSyntheticEvent NativeTouchEvent
 -- |        Rendered when the list is empty.
 -- | - `ListFooterComponent`
 -- |        Rendered at the very end of the list.
+-- | - `ListFooterComponentStyle`
+-- |        Styling for internal View for ListFooterComponent
 -- | - `ListHeaderComponent`
 -- |        Rendered at the very beginning of the list.
+-- | - `ListHeaderComponentStyle`
+-- |        Styling for internal View for ListHeaderComponent
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -2170,7 +1899,7 @@ type DrawerSlideEvent = NativeSyntheticEvent NativeTouchEvent
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -2182,12 +1911,11 @@ type DrawerSlideEvent = NativeSyntheticEvent NativeTouchEvent
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -2258,12 +1986,25 @@ type DrawerSlideEvent = NativeSyntheticEvent NativeTouchEvent
 -- |        implementation, but with a significant perf hit.
 -- | - `decelerationRate`
 -- |        A floating-point number that determines how quickly the scroll view
--- |        decelerates after the user lifts their finger. Reasonable choices include
--- |           - Normal: 0.998 (the default)
--- |           - Fast: 0.9
+-- |        decelerates after the user lifts their finger. You may also use string
+-- |        shortcuts `"normal"` and `"fast"` which match the underlying iOS settings
+-- |        for `UIScrollViewDecelerationRateNormal` and
+-- |        `UIScrollViewDecelerationRateFast` respectively.
+-- |          - `'normal'`: 0.998 on iOS, 0.985 on Android (the default)
+-- |          - `'fast'`: 0.99 on iOS, 0.9 on Android
 -- | - `directionalLockEnabled`
 -- |        When true the ScrollView will try to lock to only vertical or horizontal
 -- |        scrolling while dragging.  The default value is false.
+-- | - `disableIntervalMomentum`
+-- |        When true, the scroll view stops on the next index (in relation to scroll position at release)
+-- |        regardless of how fast the gesture is. This can be used for horizontal pagination when the page
+-- |        is less than the width of the ScrollView. The default value is false.
+-- | - `disableScrollViewPanResponder`
+-- |        When true, the default JS pan responder on the ScrollView is disabled, and full control over
+-- |        touches inside the ScrollView is left to its child components. This is particularly useful
+-- |        if `snapToInterval` is enabled, since it does not follow typical touch patterns. Do not use
+-- |        this on regular ScrollView use cases without `snapToInterval` as it may cause unexpected
+-- |        touches to occur while scrolling. The default value is false.
 -- | - `disableVirtualization`
 -- |        DEPRECATED: Virtualization provides significant performance and memory optimizations, but fully
 -- |        unmounts react instances that are outside of the render window. You should only need to disable
@@ -2278,6 +2019,15 @@ type DrawerSlideEvent = NativeSyntheticEvent NativeTouchEvent
 -- |        A marker property for telling the list to re-render (since it implements PureComponent).
 -- |        If any of your `renderItem`, Header, Footer, etc. functions depend on anything outside of the `data` prop,
 -- |        stick it here and treat it immutably.
+-- | - `fadingEdgeLength`
+-- |        Fades out the edges of the the scroll content.
+-- |        If the value is greater than 0, the fading edges will be set accordingly
+-- |        to the current scroll direction and position,
+-- |        indicating if there is more content to show.
+-- |        The default value is 0.
+-- |         __*platform* android__
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `getItem`
 -- |        A generic accessor for extracting an item from any sort of data blob.
 -- | - `getItemCount`
@@ -2287,10 +2037,10 @@ type DrawerSlideEvent = NativeSyntheticEvent NativeTouchEvent
 -- |        content if you know the height of items a priori. getItemLayout is the most efficient,
 -- |        and is easy to use if you have fixed height items, for example:
 -- |        ```
--- |             * getItemLayout={(data, index) => (
--- |             *   {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
--- |             * )}
--- |             * ```
+-- |        getItemLayout={(data, index) => (
+-- |           {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
+-- |        )}
+-- |        ```
 -- |        Remember to include separator length (height or width) in your offset calculation if you specify
 -- |        `ItemSeparatorComponent`.
 -- | - `hasTVPreferredFocus`
@@ -2356,6 +2106,24 @@ type DrawerSlideEvent = NativeSyntheticEvent NativeTouchEvent
 -- |        - true, deprecated, use 'always' instead
 -- | - `legacyImplementation`
 -- |        Uses legacy MetroListView instead of default VirtualizedSectionList
+-- | - `maintainVisibleContentPosition`
+-- |        When set, the scroll view will adjust the scroll position so that the first child
+-- |        that is currently visible and at or beyond minIndexForVisible will not change position.
+-- |        This is useful for lists that are loading content in both directions, e.g. a chat thread,
+-- |        where new messages coming in might otherwise cause the scroll position to jump. A value
+-- |        of 0 is common, but other values such as 1 can be used to skip loading spinners or other
+-- |        content that should not maintain position.
+-- |        The optional autoscrollToTopThreshold can be used to make the content automatically scroll
+-- |        to the top after making the adjustment if the user was within the threshold of the top
+-- |        before the adjustment was made. This is also useful for chat-like applications where you
+-- |        want to see new messages scroll into place, but not if the user has scrolled up a ways and
+-- |        it would be disruptive to scroll a bunch.
+-- |        Caveat 1: Reordering elements in the scrollview with this enabled will probably cause
+-- |        jumpiness and jank. It can be fixed, but there are currently no plans to do so. For now,
+-- |        don't re-order the content of any ScrollViews or Lists that use this feature.
+-- |        Caveat 2: This uses contentOffset and frame.origin in native code to compute visibility.
+-- |        Occlusion, transforms, and other complexity won't be taken into account as to whether
+-- |        content is "visible" or not.
 -- | - `maxToRenderPerBatch`
 -- |        The maximum number of items to render in each incremental render batch. The more rendered at
 -- |        once, the better the fill rate, but responsiveness my suffer because rendering content may
@@ -2384,8 +2152,9 @@ type DrawerSlideEvent = NativeSyntheticEvent NativeTouchEvent
 -- |        Multiple columns can only be rendered with `horizontal={false}` and will zig-zag like a `flexWrap` layout.
 -- |        Items should all be the same height - masonry layouts are not supported.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -2456,6 +2225,9 @@ type DrawerSlideEvent = NativeSyntheticEvent NativeTouchEvent
 -- |        Used to handle failures when scrolling to an index that has not been measured yet.
 -- |        Recommended action is to either compute your own offset and `scrollTo` it, or scroll as far
 -- |        as possible and then try again after more items have been rendered.
+-- | - `onScrollToTop`
+-- |        Fires when the scroll view scrolls to top after the status bar has been tapped
+-- |         __*platform* ios__
 -- | - `onStartShouldSetResponder`
 -- |        A view can become the touch responder by implementing the correct negotiation methods.
 -- |        There are two methods to ask the view if it wants to become responder:
@@ -2483,6 +2255,8 @@ type DrawerSlideEvent = NativeSyntheticEvent NativeTouchEvent
 -- |        When true the scroll view stops on multiples of the scroll view's size
 -- |        when scrolling. This can be used for horizontal pagination. The default
 -- |        value is false.
+-- | - `persistentScrollbar`
+-- |        Causes the scrollbars not to turn transparent when they are not in use. The default value is false.
 -- | - `pinchGestureEnabled`
 -- |        When true, ScrollView allows use of pinch gestures to zoom in and out.
 -- |        The default value is true.
@@ -2517,14 +2291,14 @@ type DrawerSlideEvent = NativeSyntheticEvent NativeTouchEvent
 -- | - `renderItem`
 -- |        Takes an item from data and renders it into the list. Typical usage:
 -- |        ```
--- |             * _renderItem = ({item}) => (
--- |             *   <TouchableOpacity onPress={() => this._onPress(item)}>
--- |             *     <Text>{item.title}</Text>
--- |             *   <TouchableOpacity/>
--- |             * );
--- |             * ...
--- |             * <FlatList data={[{title: 'Title Text', key: 'item1'}]} renderItem={this._renderItem} />
--- |             * ```
+-- |        _renderItem = ({item}) => (
+-- |           <TouchableOpacity onPress={() => this._onPress(item)}>
+-- |             <Text>{item.title}</Text>
+-- |           <TouchableOpacity/>
+-- |        );
+-- |        ...
+-- |        <FlatList data={[{title: 'Title Text', key: 'item1'}]} renderItem={this._renderItem} />
+-- |        ```
 -- |        Provides additional metadata like `index` if you need it.
 -- | - `renderScrollComponent`
 -- |        Render a custom scroll component, e.g. with a differently styled `RefreshControl`.
@@ -2550,6 +2324,10 @@ type DrawerSlideEvent = NativeSyntheticEvent NativeTouchEvent
 -- |        anything out of the box and you need to implement a custom native
 -- |        FpsListener for it to be useful.
 -- |         __*platform* android__
+-- | - `scrollToOverflowEnabled`
+-- |        When true, the scroll view can be programmatically scrolled beyond its
+-- |        content size. The default value is false.
+-- |         __*platform* ios__
 -- | - `scrollsToTop`
 -- |        When true the scroll view scrolls to top when the status bar is tapped.
 -- |        The default value is true.
@@ -2570,7 +2348,7 @@ type DrawerSlideEvent = NativeSyntheticEvent NativeTouchEvent
 -- |              - `center` will align the snap in the center
 -- |              - `end` will align the snap at the right (horizontal) or bottom (vertical)
 -- | - `snapToEnd`
--- |        Use in conjuction with `snapToOffsets`. By default, the end of the list counts as a snap
+-- |        Use in conjunction with `snapToOffsets`. By default, the end of the list counts as a snap
 -- |        offset. Set `snapToEnd` to false to disable this behavior and allow the list to scroll freely
 -- |        between its end and the last `snapToOffsets` offset. The default value is true.
 -- | - `snapToInterval`
@@ -2584,7 +2362,7 @@ type DrawerSlideEvent = NativeSyntheticEvent NativeTouchEvent
 -- |        Typically used in combination with `decelerationRate="fast"`. Overrides less configurable
 -- |        `pagingEnabled` and `snapToInterval` props.
 -- | - `snapToStart`
--- |        Use in conjuction with `snapToOffsets`. By default, the beginning of the list counts as a
+-- |        Use in conjunction with `snapToOffsets`. By default, the beginning of the list counts as a
 -- |        snap offset. Set `snapToStart` to false to disable this behavior and allow the list to scroll
 -- |        freely between its start and the first `snapToOffsets` offset. The default value is true.
 -- | - `stickyHeaderIndices`
@@ -2627,20 +2405,22 @@ type DrawerSlideEvent = NativeSyntheticEvent NativeTouchEvent
 -- |        The current scale of the scroll view content. The default value is 1.0.
 
 type FlatListProps_optional itemT = 
-  ( "ItemSeparatorComponent" :: JSX
+  ( "CellRendererComponent" :: JSX
+  ,  "ItemSeparatorComponent" :: JSX
   ,  "ListEmptyComponent" :: JSX
   ,  "ListFooterComponent" :: JSX
+  ,  "ListFooterComponentStyle" :: ViewStyle
   ,  "ListHeaderComponent" :: JSX
-  ,  accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ,  "ListHeaderComponentStyle" :: ViewStyle
+  ,  accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  alwaysBounceHorizontal :: Boolean
@@ -2659,27 +2439,32 @@ type FlatListProps_optional itemT =
   ,  debug :: Boolean
   ,  decelerationRate :: String
   ,  directionalLockEnabled :: Boolean
+  ,  disableIntervalMomentum :: Boolean
+  ,  disableScrollViewPanResponder :: Boolean
   ,  disableVirtualization :: Boolean
-  ,  endFillColor :: String
+  ,  endFillColor :: ScrollViewPropsAndroidEndFillColor
   ,  extraData :: Foreign
+  ,  fadingEdgeLength :: Number
+  ,  focusable :: Boolean
   ,  getItem :: (EffectFn2 Foreign Number itemT)
   ,  getItemCount :: (EffectFn1 Foreign Number)
   ,  getItemLayout :: (EffectFn2 (Array itemT) Number { length :: Number, offset :: Number, index :: Number })
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
-  ,  horizontal :: Boolean
+  ,  horizontal :: String
   ,  importantForAccessibility :: String
   ,  indicatorStyle :: String
   ,  initialNumToRender :: Number
-  ,  initialScrollIndex :: Number
+  ,  initialScrollIndex :: String
   ,  invertStickyHeaders :: Boolean
-  ,  inverted :: Boolean
+  ,  inverted :: String
   ,  isTVSelectable :: Boolean
   ,  keyExtractor :: (EffectFn2 itemT Number String)
   ,  keyboardDismissMode :: String
   ,  keyboardShouldPersistTaps :: String
   ,  legacyImplementation :: Boolean
   ,  listKey :: String
+  ,  maintainVisibleContentPosition :: { autoscrollToTopThreshold :: String, minIndexForVisible :: Number }
   ,  maxToRenderPerBatch :: Number
   ,  maximumZoomScale :: Number
   ,  minimumZoomScale :: Number
@@ -2687,12 +2472,13 @@ type FlatListProps_optional itemT =
   ,  needsOffscreenAlphaCompositing :: Boolean
   ,  nestedScrollEnabled :: Boolean
   ,  numColumns :: Number
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
   ,  onContentSizeChange :: (EffectFn2 Number Number Unit)
   ,  onEndReached :: ((EffectFn1 { distanceFromEnd :: Number } Unit))
   ,  onEndReachedThreshold :: String
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMomentumScrollBegin :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
   ,  onMomentumScrollEnd :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
@@ -2712,6 +2498,7 @@ type FlatListProps_optional itemT =
   ,  onScrollBeginDrag :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
   ,  onScrollEndDrag :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
   ,  onScrollToIndexFailed :: (EffectFn1 { index :: Number, highestMeasuredFrameIndex :: Number, averageItemLength :: Number } Unit)
+  ,  onScrollToTop :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
   ,  onStartShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onStartShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onTouchCancel :: (EffectFn1 GestureResponderEvent Unit)
@@ -2722,6 +2509,7 @@ type FlatListProps_optional itemT =
   ,  onViewableItemsChanged :: ((EffectFn1 { viewableItems :: (Array ViewToken), changed :: (Array ViewToken) } Unit))
   ,  overScrollMode :: String
   ,  pagingEnabled :: Boolean
+  ,  persistentScrollbar :: Boolean
   ,  pinchGestureEnabled :: Boolean
   ,  pointerEvents :: String
   ,  progressViewOffset :: Number
@@ -2734,6 +2522,7 @@ type FlatListProps_optional itemT =
   ,  scrollEventThrottle :: Number
   ,  scrollIndicatorInsets :: Insets
   ,  scrollPerfTag :: String
+  ,  scrollToOverflowEnabled :: Boolean
   ,  scrollsToTop :: Boolean
   ,  shouldRasterizeIOS :: Boolean
   ,  showsHorizontalScrollIndicator :: Boolean
@@ -2767,17 +2556,14 @@ type FlatListProps_optional itemT =
 -- |        Rendered when the list is empty.
 -- | - `ListFooterComponent`
 -- |        Rendered at the very end of the list.
+-- | - `ListFooterComponentStyle`
+-- |        Styling for internal View for ListFooterComponent
 -- | - `ListHeaderComponent`
 -- |        Rendered at the very beginning of the list.
+-- | - `ListHeaderComponentStyle`
+-- |        Styling for internal View for ListHeaderComponent
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -2785,7 +2571,7 @@ type FlatListProps_optional itemT =
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -2797,12 +2583,11 @@ type FlatListProps_optional itemT =
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -2873,12 +2658,25 @@ type FlatListProps_optional itemT =
 -- |        implementation, but with a significant perf hit.
 -- | - `decelerationRate`
 -- |        A floating-point number that determines how quickly the scroll view
--- |        decelerates after the user lifts their finger. Reasonable choices include
--- |           - Normal: 0.998 (the default)
--- |           - Fast: 0.9
+-- |        decelerates after the user lifts their finger. You may also use string
+-- |        shortcuts `"normal"` and `"fast"` which match the underlying iOS settings
+-- |        for `UIScrollViewDecelerationRateNormal` and
+-- |        `UIScrollViewDecelerationRateFast` respectively.
+-- |          - `'normal'`: 0.998 on iOS, 0.985 on Android (the default)
+-- |          - `'fast'`: 0.99 on iOS, 0.9 on Android
 -- | - `directionalLockEnabled`
 -- |        When true the ScrollView will try to lock to only vertical or horizontal
 -- |        scrolling while dragging.  The default value is false.
+-- | - `disableIntervalMomentum`
+-- |        When true, the scroll view stops on the next index (in relation to scroll position at release)
+-- |        regardless of how fast the gesture is. This can be used for horizontal pagination when the page
+-- |        is less than the width of the ScrollView. The default value is false.
+-- | - `disableScrollViewPanResponder`
+-- |        When true, the default JS pan responder on the ScrollView is disabled, and full control over
+-- |        touches inside the ScrollView is left to its child components. This is particularly useful
+-- |        if `snapToInterval` is enabled, since it does not follow typical touch patterns. Do not use
+-- |        this on regular ScrollView use cases without `snapToInterval` as it may cause unexpected
+-- |        touches to occur while scrolling. The default value is false.
 -- | - `disableVirtualization`
 -- |        DEPRECATED: Virtualization provides significant performance and memory optimizations, but fully
 -- |        unmounts react instances that are outside of the render window. You should only need to disable
@@ -2893,6 +2691,15 @@ type FlatListProps_optional itemT =
 -- |        A marker property for telling the list to re-render (since it implements PureComponent).
 -- |        If any of your `renderItem`, Header, Footer, etc. functions depend on anything outside of the `data` prop,
 -- |        stick it here and treat it immutably.
+-- | - `fadingEdgeLength`
+-- |        Fades out the edges of the the scroll content.
+-- |        If the value is greater than 0, the fading edges will be set accordingly
+-- |        to the current scroll direction and position,
+-- |        indicating if there is more content to show.
+-- |        The default value is 0.
+-- |         __*platform* android__
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `getItem`
 -- |        A generic accessor for extracting an item from any sort of data blob.
 -- | - `getItemCount`
@@ -2902,10 +2709,10 @@ type FlatListProps_optional itemT =
 -- |        content if you know the height of items a priori. getItemLayout is the most efficient,
 -- |        and is easy to use if you have fixed height items, for example:
 -- |        ```
--- |             * getItemLayout={(data, index) => (
--- |             *   {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
--- |             * )}
--- |             * ```
+-- |        getItemLayout={(data, index) => (
+-- |           {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
+-- |        )}
+-- |        ```
 -- |        Remember to include separator length (height or width) in your offset calculation if you specify
 -- |        `ItemSeparatorComponent`.
 -- | - `hasTVPreferredFocus`
@@ -2971,6 +2778,24 @@ type FlatListProps_optional itemT =
 -- |        - true, deprecated, use 'always' instead
 -- | - `legacyImplementation`
 -- |        Uses legacy MetroListView instead of default VirtualizedSectionList
+-- | - `maintainVisibleContentPosition`
+-- |        When set, the scroll view will adjust the scroll position so that the first child
+-- |        that is currently visible and at or beyond minIndexForVisible will not change position.
+-- |        This is useful for lists that are loading content in both directions, e.g. a chat thread,
+-- |        where new messages coming in might otherwise cause the scroll position to jump. A value
+-- |        of 0 is common, but other values such as 1 can be used to skip loading spinners or other
+-- |        content that should not maintain position.
+-- |        The optional autoscrollToTopThreshold can be used to make the content automatically scroll
+-- |        to the top after making the adjustment if the user was within the threshold of the top
+-- |        before the adjustment was made. This is also useful for chat-like applications where you
+-- |        want to see new messages scroll into place, but not if the user has scrolled up a ways and
+-- |        it would be disruptive to scroll a bunch.
+-- |        Caveat 1: Reordering elements in the scrollview with this enabled will probably cause
+-- |        jumpiness and jank. It can be fixed, but there are currently no plans to do so. For now,
+-- |        don't re-order the content of any ScrollViews or Lists that use this feature.
+-- |        Caveat 2: This uses contentOffset and frame.origin in native code to compute visibility.
+-- |        Occlusion, transforms, and other complexity won't be taken into account as to whether
+-- |        content is "visible" or not.
 -- | - `maxToRenderPerBatch`
 -- |        The maximum number of items to render in each incremental render batch. The more rendered at
 -- |        once, the better the fill rate, but responsiveness my suffer because rendering content may
@@ -2999,8 +2824,9 @@ type FlatListProps_optional itemT =
 -- |        Multiple columns can only be rendered with `horizontal={false}` and will zig-zag like a `flexWrap` layout.
 -- |        Items should all be the same height - masonry layouts are not supported.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -3071,6 +2897,9 @@ type FlatListProps_optional itemT =
 -- |        Used to handle failures when scrolling to an index that has not been measured yet.
 -- |        Recommended action is to either compute your own offset and `scrollTo` it, or scroll as far
 -- |        as possible and then try again after more items have been rendered.
+-- | - `onScrollToTop`
+-- |        Fires when the scroll view scrolls to top after the status bar has been tapped
+-- |         __*platform* ios__
 -- | - `onStartShouldSetResponder`
 -- |        A view can become the touch responder by implementing the correct negotiation methods.
 -- |        There are two methods to ask the view if it wants to become responder:
@@ -3098,6 +2927,8 @@ type FlatListProps_optional itemT =
 -- |        When true the scroll view stops on multiples of the scroll view's size
 -- |        when scrolling. This can be used for horizontal pagination. The default
 -- |        value is false.
+-- | - `persistentScrollbar`
+-- |        Causes the scrollbars not to turn transparent when they are not in use. The default value is false.
 -- | - `pinchGestureEnabled`
 -- |        When true, ScrollView allows use of pinch gestures to zoom in and out.
 -- |        The default value is true.
@@ -3132,14 +2963,14 @@ type FlatListProps_optional itemT =
 -- | - `renderItem`
 -- |        Takes an item from data and renders it into the list. Typical usage:
 -- |        ```
--- |             * _renderItem = ({item}) => (
--- |             *   <TouchableOpacity onPress={() => this._onPress(item)}>
--- |             *     <Text>{item.title}</Text>
--- |             *   <TouchableOpacity/>
--- |             * );
--- |             * ...
--- |             * <FlatList data={[{title: 'Title Text', key: 'item1'}]} renderItem={this._renderItem} />
--- |             * ```
+-- |        _renderItem = ({item}) => (
+-- |           <TouchableOpacity onPress={() => this._onPress(item)}>
+-- |             <Text>{item.title}</Text>
+-- |           <TouchableOpacity/>
+-- |        );
+-- |        ...
+-- |        <FlatList data={[{title: 'Title Text', key: 'item1'}]} renderItem={this._renderItem} />
+-- |        ```
 -- |        Provides additional metadata like `index` if you need it.
 -- | - `renderScrollComponent`
 -- |        Render a custom scroll component, e.g. with a differently styled `RefreshControl`.
@@ -3165,6 +2996,10 @@ type FlatListProps_optional itemT =
 -- |        anything out of the box and you need to implement a custom native
 -- |        FpsListener for it to be useful.
 -- |         __*platform* android__
+-- | - `scrollToOverflowEnabled`
+-- |        When true, the scroll view can be programmatically scrolled beyond its
+-- |        content size. The default value is false.
+-- |         __*platform* ios__
 -- | - `scrollsToTop`
 -- |        When true the scroll view scrolls to top when the status bar is tapped.
 -- |        The default value is true.
@@ -3185,7 +3020,7 @@ type FlatListProps_optional itemT =
 -- |              - `center` will align the snap in the center
 -- |              - `end` will align the snap at the right (horizontal) or bottom (vertical)
 -- | - `snapToEnd`
--- |        Use in conjuction with `snapToOffsets`. By default, the end of the list counts as a snap
+-- |        Use in conjunction with `snapToOffsets`. By default, the end of the list counts as a snap
 -- |        offset. Set `snapToEnd` to false to disable this behavior and allow the list to scroll freely
 -- |        between its end and the last `snapToOffsets` offset. The default value is true.
 -- | - `snapToInterval`
@@ -3199,7 +3034,7 @@ type FlatListProps_optional itemT =
 -- |        Typically used in combination with `decelerationRate="fast"`. Overrides less configurable
 -- |        `pagingEnabled` and `snapToInterval` props.
 -- | - `snapToStart`
--- |        Use in conjuction with `snapToOffsets`. By default, the beginning of the list counts as a
+-- |        Use in conjunction with `snapToOffsets`. By default, the beginning of the list counts as a
 -- |        snap offset. Set `snapToStart` to false to disable this behavior and allow the list to scroll
 -- |        freely between its start and the first `snapToOffsets` offset. The default value is true.
 -- | - `stickyHeaderIndices`
@@ -3243,7 +3078,7 @@ type FlatListProps_optional itemT =
 
 type FlatListProps_required itemT  optional = 
   ( data :: (Array itemT)
-  ,  renderItem :: (EffectFn1 (ListRenderItemInfo itemT) JSX)
+  ,  renderItem :: JSX
   | optional
   )
 
@@ -3260,12 +3095,8 @@ type GestureResponderEvent = NativeSyntheticEvent NativeTouchEvent
 
 
 
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
+-- | - `accessibilityActions`
+-- |        Provides an array of custom actions available for accessibility.
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -3273,7 +3104,7 @@ type GestureResponderEvent = NativeSyntheticEvent NativeTouchEvent
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -3285,11 +3116,13 @@ type GestureResponderEvent = NativeSyntheticEvent NativeTouchEvent
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
+-- | - `accessibilityViewIsModal`
+-- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
 -- | - `accessible`
 -- |        When true, indicates that the view is an accessibility element.
@@ -3305,7 +3138,8 @@ type GestureResponderEvent = NativeSyntheticEvent NativeTouchEvent
 -- | - `defaultSource`
 -- |        A static image to display while downloading the final image off the network.
 -- | - `fadeDuration`
--- |        Duration of fade in animation.
+-- |        Duration of fade in animation in ms. Defaults to 300
+-- |         __*platform* android__
 -- | - `height`
 -- |        Required if loading images via 'uri' from drawable folder on Android
 -- |        Explanation: https://medium.com/@adamjacobb/react-native-performance-images-adf5843e120
@@ -3322,6 +3156,11 @@ type GestureResponderEvent = NativeSyntheticEvent NativeTouchEvent
 -- |        similarly to `source`, this property represents the resource used to render
 -- |        the loading indicator for the image, displayed until image is ready to be
 -- |        displayed, typically after when it got downloaded from network.
+-- | - `onAccessibilityAction`
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
+-- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
 -- |         __*platform* ios__
@@ -3390,15 +3229,16 @@ type GestureResponderEvent = NativeSyntheticEvent NativeTouchEvent
 -- |        Explanation: https://medium.com/@adamjacobb/react-native-performance-images-adf5843e120
 
 type ImageBackgroundProps_optional  = 
-  ( accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
+  ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  blurRadius :: Number
   ,  borderBottomLeftRadius :: Number
@@ -3413,9 +3253,11 @@ type ImageBackgroundProps_optional  =
   ,  imageStyle :: CSS
   ,  importantForAccessibility :: String
   ,  loadingIndicatorSource :: ImageURISource
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
   ,  onError :: (EffectFn1 (NativeSyntheticEvent ImageErrorEventData) Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onLoad :: (EffectFn1 (NativeSyntheticEvent ImageLoadEventData) Unit)
   ,  onLoadEnd :: (Effect Unit)
   ,  onLoadStart :: (Effect Unit)
@@ -3433,12 +3275,8 @@ type ImageBackgroundProps_optional  =
   )
 
 
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
+-- | - `accessibilityActions`
+-- |        Provides an array of custom actions available for accessibility.
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -3446,7 +3284,7 @@ type ImageBackgroundProps_optional  =
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -3458,11 +3296,13 @@ type ImageBackgroundProps_optional  =
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
+-- | - `accessibilityViewIsModal`
+-- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
 -- | - `accessible`
 -- |        When true, indicates that the view is an accessibility element.
@@ -3478,7 +3318,8 @@ type ImageBackgroundProps_optional  =
 -- | - `defaultSource`
 -- |        A static image to display while downloading the final image off the network.
 -- | - `fadeDuration`
--- |        Duration of fade in animation.
+-- |        Duration of fade in animation in ms. Defaults to 300
+-- |         __*platform* android__
 -- | - `height`
 -- |        Required if loading images via 'uri' from drawable folder on Android
 -- |        Explanation: https://medium.com/@adamjacobb/react-native-performance-images-adf5843e120
@@ -3495,6 +3336,11 @@ type ImageBackgroundProps_optional  =
 -- |        similarly to `source`, this property represents the resource used to render
 -- |        the loading indicator for the image, displayed until image is ready to be
 -- |        displayed, typically after when it got downloaded from network.
+-- | - `onAccessibilityAction`
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
+-- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
 -- |         __*platform* ios__
@@ -3594,12 +3440,8 @@ type ImageProgressEventDataIOS  = {
 
 
 
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
+-- | - `accessibilityActions`
+-- |        Provides an array of custom actions available for accessibility.
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -3607,7 +3449,7 @@ type ImageProgressEventDataIOS  = {
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -3619,11 +3461,13 @@ type ImageProgressEventDataIOS  = {
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
+-- | - `accessibilityViewIsModal`
+-- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
 -- | - `accessible`
 -- |        When true, indicates that the view is an accessibility element.
@@ -3639,7 +3483,8 @@ type ImageProgressEventDataIOS  = {
 -- | - `defaultSource`
 -- |        A static image to display while downloading the final image off the network.
 -- | - `fadeDuration`
--- |        Duration of fade in animation.
+-- |        Duration of fade in animation in ms. Defaults to 300
+-- |         __*platform* android__
 -- | - `height`
 -- |        Required if loading images via 'uri' from drawable folder on Android
 -- |        Explanation: https://medium.com/@adamjacobb/react-native-performance-images-adf5843e120
@@ -3656,6 +3501,11 @@ type ImageProgressEventDataIOS  = {
 -- |        similarly to `source`, this property represents the resource used to render
 -- |        the loading indicator for the image, displayed until image is ready to be
 -- |        displayed, typically after when it got downloaded from network.
+-- | - `onAccessibilityAction`
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
+-- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
 -- |         __*platform* ios__
@@ -3726,15 +3576,16 @@ type ImageProgressEventDataIOS  = {
 -- |        Explanation: https://medium.com/@adamjacobb/react-native-performance-images-adf5843e120
 
 type ImageProps_optional  = 
-  ( accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
+  ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  blurRadius :: Number
   ,  borderBottomLeftRadius :: Number
@@ -3748,9 +3599,11 @@ type ImageProps_optional  =
   ,  height :: Number
   ,  importantForAccessibility :: String
   ,  loadingIndicatorSource :: ImageURISource
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
   ,  onError :: (EffectFn1 (NativeSyntheticEvent ImageErrorEventData) Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onLoad :: (EffectFn1 (NativeSyntheticEvent ImageLoadEventData) Unit)
   ,  onLoadEnd :: (Effect Unit)
   ,  onLoadStart :: (Effect Unit)
@@ -3768,12 +3621,8 @@ type ImageProps_optional  =
   )
 
 
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
+-- | - `accessibilityActions`
+-- |        Provides an array of custom actions available for accessibility.
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -3781,7 +3630,7 @@ type ImageProps_optional  =
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -3793,11 +3642,13 @@ type ImageProps_optional  =
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
+-- | - `accessibilityViewIsModal`
+-- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
 -- | - `accessible`
 -- |        When true, indicates that the view is an accessibility element.
@@ -3813,7 +3664,8 @@ type ImageProps_optional  =
 -- | - `defaultSource`
 -- |        A static image to display while downloading the final image off the network.
 -- | - `fadeDuration`
--- |        Duration of fade in animation.
+-- |        Duration of fade in animation in ms. Defaults to 300
+-- |         __*platform* android__
 -- | - `height`
 -- |        Required if loading images via 'uri' from drawable folder on Android
 -- |        Explanation: https://medium.com/@adamjacobb/react-native-performance-images-adf5843e120
@@ -3830,6 +3682,11 @@ type ImageProps_optional  =
 -- |        similarly to `source`, this property represents the resource used to render
 -- |        the loading indicator for the image, displayed until image is ready to be
 -- |        displayed, typically after when it got downloaded from network.
+-- | - `onAccessibilityAction`
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
+-- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
 -- |         __*platform* ios__
@@ -3931,7 +3788,7 @@ type ImageURISource  = {
 -- |        An ID which is used to associate this InputAccessoryView to specified TextInput(s).
 
 type InputAccessoryViewProps  = 
-  ( backgroundColor :: String
+  ( backgroundColor :: InputAccessoryViewPropsBackgroundColor
   ,  nativeID :: String
   ,  style :: CSS
   ,  key :: String
@@ -3962,13 +3819,6 @@ type Insets  = {
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -3976,7 +3826,7 @@ type Insets  = {
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -3988,12 +3838,11 @@ type Insets  = {
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -4009,6 +3858,8 @@ type Insets  = {
 -- | - `enabled`
 -- |        Enables or disables the KeyboardAvoidingView.
 -- |        Default is true
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -4052,8 +3903,9 @@ type Insets  = {
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -4163,22 +4015,22 @@ type Insets  = {
 -- |         __*platform* ios__
 
 type KeyboardAvoidingViewProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  behavior :: String
   ,  collapsable :: Boolean
   ,  contentContainerStyle :: CSS
   ,  enabled :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
@@ -4186,9 +4038,10 @@ type KeyboardAvoidingViewProps  =
   ,  keyboardVerticalOffset :: Number
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -4235,11 +4088,6 @@ keyboardAvoidingView_ :: Array JSX -> JSX
 keyboardAvoidingView_ children = keyboardAvoidingView { children }
 
 
-type LayoutChangeEvent  = {
-    nativeEvent :: { layout :: LayoutRectangle }
-}
-
-
 type LayoutRectangle  = {
     height :: Number
   , width :: Number
@@ -4248,26 +4096,12 @@ type LayoutRectangle  = {
 }
 
 
-type ListRenderItemInfo itemT = {
-    index :: Number
-  , item :: itemT
-  , separators :: { highlight :: (Effect Unit), unhighlight :: (Effect Unit), updateProps :: (EffectFn2 String Foreign Unit) }
-}
-
-
 foreign import data ListViewDataSource :: Type
 
 
--- | see <https://facebook.github.io/react-native/docs/listview.html#props>
+-- | see <https://reactnative.dev/docs/listview#props>
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -4275,7 +4109,7 @@ foreign import data ListViewDataSource :: Type
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -4287,12 +4121,11 @@ foreign import data ListViewDataSource :: Type
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -4357,12 +4190,25 @@ foreign import data ListViewDataSource :: Type
 -- |        An instance of [ListView.DataSource](docs/listviewdatasource.html) to use
 -- | - `decelerationRate`
 -- |        A floating-point number that determines how quickly the scroll view
--- |        decelerates after the user lifts their finger. Reasonable choices include
--- |           - Normal: 0.998 (the default)
--- |           - Fast: 0.9
+-- |        decelerates after the user lifts their finger. You may also use string
+-- |        shortcuts `"normal"` and `"fast"` which match the underlying iOS settings
+-- |        for `UIScrollViewDecelerationRateNormal` and
+-- |        `UIScrollViewDecelerationRateFast` respectively.
+-- |          - `'normal'`: 0.998 on iOS, 0.985 on Android (the default)
+-- |          - `'fast'`: 0.99 on iOS, 0.9 on Android
 -- | - `directionalLockEnabled`
 -- |        When true the ScrollView will try to lock to only vertical or horizontal
 -- |        scrolling while dragging.  The default value is false.
+-- | - `disableIntervalMomentum`
+-- |        When true, the scroll view stops on the next index (in relation to scroll position at release)
+-- |        regardless of how fast the gesture is. This can be used for horizontal pagination when the page
+-- |        is less than the width of the ScrollView. The default value is false.
+-- | - `disableScrollViewPanResponder`
+-- |        When true, the default JS pan responder on the ScrollView is disabled, and full control over
+-- |        touches inside the ScrollView is left to its child components. This is particularly useful
+-- |        if `snapToInterval` is enabled, since it does not follow typical touch patterns. Do not use
+-- |        this on regular ScrollView use cases without `snapToInterval` as it may cause unexpected
+-- |        touches to occur while scrolling. The default value is false.
 -- | - `enableEmptySections`
 -- |        Flag indicating whether empty section headers should be rendered.
 -- |        In the future release empty section headers will be rendered by
@@ -4375,6 +4221,15 @@ foreign import data ListViewDataSource :: Type
 -- |        scrollview with a color to avoid setting a background and creating
 -- |        unnecessary overdraw. This is an advanced optimization that is not
 -- |        needed in the general case.
+-- | - `fadingEdgeLength`
+-- |        Fades out the edges of the the scroll content.
+-- |        If the value is greater than 0, the fading edges will be set accordingly
+-- |        to the current scroll direction and position,
+-- |        indicating if there is more content to show.
+-- |        The default value is 0.
+-- |         __*platform* android__
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -4431,6 +4286,24 @@ foreign import data ListViewDataSource :: Type
 -- |        - 'handled', the keyboard will not dismiss automatically when the tap was handled by a children, (or captured by an ancestor).
 -- |        - false, deprecated, use 'never' instead
 -- |        - true, deprecated, use 'always' instead
+-- | - `maintainVisibleContentPosition`
+-- |        When set, the scroll view will adjust the scroll position so that the first child
+-- |        that is currently visible and at or beyond minIndexForVisible will not change position.
+-- |        This is useful for lists that are loading content in both directions, e.g. a chat thread,
+-- |        where new messages coming in might otherwise cause the scroll position to jump. A value
+-- |        of 0 is common, but other values such as 1 can be used to skip loading spinners or other
+-- |        content that should not maintain position.
+-- |        The optional autoscrollToTopThreshold can be used to make the content automatically scroll
+-- |        to the top after making the adjustment if the user was within the threshold of the top
+-- |        before the adjustment was made. This is also useful for chat-like applications where you
+-- |        want to see new messages scroll into place, but not if the user has scrolled up a ways and
+-- |        it would be disruptive to scroll a bunch.
+-- |        Caveat 1: Reordering elements in the scrollview with this enabled will probably cause
+-- |        jumpiness and jank. It can be fixed, but there are currently no plans to do so. For now,
+-- |        don't re-order the content of any ScrollViews or Lists that use this feature.
+-- |        Caveat 2: This uses contentOffset and frame.origin in native code to compute visibility.
+-- |        Occlusion, transforms, and other complexity won't be taken into account as to whether
+-- |        content is "visible" or not.
 -- | - `maximumZoomScale`
 -- |        The maximum allowed zoom scale. The default value is 1.0.
 -- | - `minimumZoomScale`
@@ -4452,8 +4325,9 @@ foreign import data ListViewDataSource :: Type
 -- | - `nestedScrollEnabled`
 -- |        Enables nested scrolling for Android API level 21+. Nested scrolling is supported by default on iOS.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -4526,6 +4400,9 @@ foreign import data ListViewDataSource :: Type
 -- |        Fires if a user initiates a scroll gesture.
 -- | - `onScrollEndDrag`
 -- |        Fires when a user has finished scrolling.
+-- | - `onScrollToTop`
+-- |        Fires when the scroll view scrolls to top after the status bar has been tapped
+-- |         __*platform* ios__
 -- | - `onStartShouldSetResponder`
 -- |        A view can become the touch responder by implementing the correct negotiation methods.
 -- |        There are two methods to ask the view if it wants to become responder:
@@ -4553,6 +4430,8 @@ foreign import data ListViewDataSource :: Type
 -- |        When true the scroll view stops on multiples of the scroll view's size
 -- |        when scrolling. This can be used for horizontal pagination. The default
 -- |        value is false.
+-- | - `persistentScrollbar`
+-- |        Causes the scrollbars not to turn transparent when they are not in use. The default value is false.
 -- | - `pinchGestureEnabled`
 -- |        When true, ScrollView allows use of pinch gestures to zoom in and out.
 -- |        The default value is true.
@@ -4638,6 +4517,10 @@ foreign import data ListViewDataSource :: Type
 -- | - `scrollRenderAheadDistance`
 -- |        How early to start rendering rows before they come on screen, in
 -- |        pixels.
+-- | - `scrollToOverflowEnabled`
+-- |        When true, the scroll view can be programmatically scrolled beyond its
+-- |        content size. The default value is false.
+-- |         __*platform* ios__
 -- | - `scrollsToTop`
 -- |        When true the scroll view scrolls to top when the status bar is tapped.
 -- |        The default value is true.
@@ -4658,7 +4541,7 @@ foreign import data ListViewDataSource :: Type
 -- |              - `center` will align the snap in the center
 -- |              - `end` will align the snap at the right (horizontal) or bottom (vertical)
 -- | - `snapToEnd`
--- |        Use in conjuction with `snapToOffsets`. By default, the end of the list counts as a snap
+-- |        Use in conjunction with `snapToOffsets`. By default, the end of the list counts as a snap
 -- |        offset. Set `snapToEnd` to false to disable this behavior and allow the list to scroll freely
 -- |        between its end and the last `snapToOffsets` offset. The default value is true.
 -- | - `snapToInterval`
@@ -4672,7 +4555,7 @@ foreign import data ListViewDataSource :: Type
 -- |        Typically used in combination with `decelerationRate="fast"`. Overrides less configurable
 -- |        `pagingEnabled` and `snapToInterval` props.
 -- | - `snapToStart`
--- |        Use in conjuction with `snapToOffsets`. By default, the beginning of the list counts as a
+-- |        Use in conjunction with `snapToOffsets`. By default, the beginning of the list counts as a
 -- |        snap offset. Set `snapToStart` to false to disable this behavior and allow the list to scroll
 -- |        freely between its start and the first `snapToOffsets` offset. The default value is true.
 -- | - `stickyHeaderIndices`
@@ -4711,16 +4594,15 @@ foreign import data ListViewDataSource :: Type
 -- |        The current scale of the scroll view content. The default value is 1.0.
 
 type ListViewProps_optional  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  alwaysBounceHorizontal :: Boolean
@@ -4737,11 +4619,15 @@ type ListViewProps_optional  =
   ,  contentOffset :: PointPropType
   ,  decelerationRate :: String
   ,  directionalLockEnabled :: Boolean
+  ,  disableIntervalMomentum :: Boolean
+  ,  disableScrollViewPanResponder :: Boolean
   ,  enableEmptySections :: Boolean
-  ,  endFillColor :: String
+  ,  endFillColor :: ScrollViewPropsAndroidEndFillColor
+  ,  fadingEdgeLength :: Number
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
-  ,  horizontal :: Boolean
+  ,  horizontal :: String
   ,  importantForAccessibility :: String
   ,  indicatorStyle :: String
   ,  initialListSize :: Number
@@ -4749,18 +4635,20 @@ type ListViewProps_optional  =
   ,  isTVSelectable :: Boolean
   ,  keyboardDismissMode :: String
   ,  keyboardShouldPersistTaps :: String
+  ,  maintainVisibleContentPosition :: { autoscrollToTopThreshold :: String, minIndexForVisible :: Number }
   ,  maximumZoomScale :: Number
   ,  minimumZoomScale :: Number
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
   ,  nestedScrollEnabled :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
   ,  onChangeVisibleRows :: (EffectFn2 (Array (Object Foreign)) (Array (Object Foreign)) Unit)
   ,  onContentSizeChange :: (EffectFn2 Number Number Unit)
   ,  onEndReached :: (Effect Unit)
   ,  onEndReachedThreshold :: Number
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMomentumScrollBegin :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
   ,  onMomentumScrollEnd :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
@@ -4778,6 +4666,7 @@ type ListViewProps_optional  =
   ,  onScrollAnimationEnd :: (Effect Unit)
   ,  onScrollBeginDrag :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
   ,  onScrollEndDrag :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
+  ,  onScrollToTop :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
   ,  onStartShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onStartShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onTouchCancel :: (EffectFn1 GestureResponderEvent Unit)
@@ -4788,6 +4677,7 @@ type ListViewProps_optional  =
   ,  overScrollMode :: String
   ,  pageSize :: Number
   ,  pagingEnabled :: Boolean
+  ,  persistentScrollbar :: Boolean
   ,  pinchGestureEnabled :: Boolean
   ,  pointerEvents :: String
   ,  refreshControl :: JSX
@@ -4803,6 +4693,7 @@ type ListViewProps_optional  =
   ,  scrollIndicatorInsets :: Insets
   ,  scrollPerfTag :: String
   ,  scrollRenderAheadDistance :: Number
+  ,  scrollToOverflowEnabled :: Boolean
   ,  scrollsToTop :: Boolean
   ,  shouldRasterizeIOS :: Boolean
   ,  showsHorizontalScrollIndicator :: Boolean
@@ -4826,16 +4717,9 @@ type ListViewProps_optional  =
   ,  children :: Array JSX
   )
 
--- | see <https://facebook.github.io/react-native/docs/listview.html#props>
+-- | see <https://reactnative.dev/docs/listview#props>
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -4843,7 +4727,7 @@ type ListViewProps_optional  =
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -4855,12 +4739,11 @@ type ListViewProps_optional  =
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -4925,12 +4808,25 @@ type ListViewProps_optional  =
 -- |        An instance of [ListView.DataSource](docs/listviewdatasource.html) to use
 -- | - `decelerationRate`
 -- |        A floating-point number that determines how quickly the scroll view
--- |        decelerates after the user lifts their finger. Reasonable choices include
--- |           - Normal: 0.998 (the default)
--- |           - Fast: 0.9
+-- |        decelerates after the user lifts their finger. You may also use string
+-- |        shortcuts `"normal"` and `"fast"` which match the underlying iOS settings
+-- |        for `UIScrollViewDecelerationRateNormal` and
+-- |        `UIScrollViewDecelerationRateFast` respectively.
+-- |          - `'normal'`: 0.998 on iOS, 0.985 on Android (the default)
+-- |          - `'fast'`: 0.99 on iOS, 0.9 on Android
 -- | - `directionalLockEnabled`
 -- |        When true the ScrollView will try to lock to only vertical or horizontal
 -- |        scrolling while dragging.  The default value is false.
+-- | - `disableIntervalMomentum`
+-- |        When true, the scroll view stops on the next index (in relation to scroll position at release)
+-- |        regardless of how fast the gesture is. This can be used for horizontal pagination when the page
+-- |        is less than the width of the ScrollView. The default value is false.
+-- | - `disableScrollViewPanResponder`
+-- |        When true, the default JS pan responder on the ScrollView is disabled, and full control over
+-- |        touches inside the ScrollView is left to its child components. This is particularly useful
+-- |        if `snapToInterval` is enabled, since it does not follow typical touch patterns. Do not use
+-- |        this on regular ScrollView use cases without `snapToInterval` as it may cause unexpected
+-- |        touches to occur while scrolling. The default value is false.
 -- | - `enableEmptySections`
 -- |        Flag indicating whether empty section headers should be rendered.
 -- |        In the future release empty section headers will be rendered by
@@ -4943,6 +4839,15 @@ type ListViewProps_optional  =
 -- |        scrollview with a color to avoid setting a background and creating
 -- |        unnecessary overdraw. This is an advanced optimization that is not
 -- |        needed in the general case.
+-- | - `fadingEdgeLength`
+-- |        Fades out the edges of the the scroll content.
+-- |        If the value is greater than 0, the fading edges will be set accordingly
+-- |        to the current scroll direction and position,
+-- |        indicating if there is more content to show.
+-- |        The default value is 0.
+-- |         __*platform* android__
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -4999,6 +4904,24 @@ type ListViewProps_optional  =
 -- |        - 'handled', the keyboard will not dismiss automatically when the tap was handled by a children, (or captured by an ancestor).
 -- |        - false, deprecated, use 'never' instead
 -- |        - true, deprecated, use 'always' instead
+-- | - `maintainVisibleContentPosition`
+-- |        When set, the scroll view will adjust the scroll position so that the first child
+-- |        that is currently visible and at or beyond minIndexForVisible will not change position.
+-- |        This is useful for lists that are loading content in both directions, e.g. a chat thread,
+-- |        where new messages coming in might otherwise cause the scroll position to jump. A value
+-- |        of 0 is common, but other values such as 1 can be used to skip loading spinners or other
+-- |        content that should not maintain position.
+-- |        The optional autoscrollToTopThreshold can be used to make the content automatically scroll
+-- |        to the top after making the adjustment if the user was within the threshold of the top
+-- |        before the adjustment was made. This is also useful for chat-like applications where you
+-- |        want to see new messages scroll into place, but not if the user has scrolled up a ways and
+-- |        it would be disruptive to scroll a bunch.
+-- |        Caveat 1: Reordering elements in the scrollview with this enabled will probably cause
+-- |        jumpiness and jank. It can be fixed, but there are currently no plans to do so. For now,
+-- |        don't re-order the content of any ScrollViews or Lists that use this feature.
+-- |        Caveat 2: This uses contentOffset and frame.origin in native code to compute visibility.
+-- |        Occlusion, transforms, and other complexity won't be taken into account as to whether
+-- |        content is "visible" or not.
 -- | - `maximumZoomScale`
 -- |        The maximum allowed zoom scale. The default value is 1.0.
 -- | - `minimumZoomScale`
@@ -5020,8 +4943,9 @@ type ListViewProps_optional  =
 -- | - `nestedScrollEnabled`
 -- |        Enables nested scrolling for Android API level 21+. Nested scrolling is supported by default on iOS.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -5094,6 +5018,9 @@ type ListViewProps_optional  =
 -- |        Fires if a user initiates a scroll gesture.
 -- | - `onScrollEndDrag`
 -- |        Fires when a user has finished scrolling.
+-- | - `onScrollToTop`
+-- |        Fires when the scroll view scrolls to top after the status bar has been tapped
+-- |         __*platform* ios__
 -- | - `onStartShouldSetResponder`
 -- |        A view can become the touch responder by implementing the correct negotiation methods.
 -- |        There are two methods to ask the view if it wants to become responder:
@@ -5121,6 +5048,8 @@ type ListViewProps_optional  =
 -- |        When true the scroll view stops on multiples of the scroll view's size
 -- |        when scrolling. This can be used for horizontal pagination. The default
 -- |        value is false.
+-- | - `persistentScrollbar`
+-- |        Causes the scrollbars not to turn transparent when they are not in use. The default value is false.
 -- | - `pinchGestureEnabled`
 -- |        When true, ScrollView allows use of pinch gestures to zoom in and out.
 -- |        The default value is true.
@@ -5206,6 +5135,10 @@ type ListViewProps_optional  =
 -- | - `scrollRenderAheadDistance`
 -- |        How early to start rendering rows before they come on screen, in
 -- |        pixels.
+-- | - `scrollToOverflowEnabled`
+-- |        When true, the scroll view can be programmatically scrolled beyond its
+-- |        content size. The default value is false.
+-- |         __*platform* ios__
 -- | - `scrollsToTop`
 -- |        When true the scroll view scrolls to top when the status bar is tapped.
 -- |        The default value is true.
@@ -5226,7 +5159,7 @@ type ListViewProps_optional  =
 -- |              - `center` will align the snap in the center
 -- |              - `end` will align the snap at the right (horizontal) or bottom (vertical)
 -- | - `snapToEnd`
--- |        Use in conjuction with `snapToOffsets`. By default, the end of the list counts as a snap
+-- |        Use in conjunction with `snapToOffsets`. By default, the end of the list counts as a snap
 -- |        offset. Set `snapToEnd` to false to disable this behavior and allow the list to scroll freely
 -- |        between its end and the last `snapToOffsets` offset. The default value is true.
 -- | - `snapToInterval`
@@ -5240,7 +5173,7 @@ type ListViewProps_optional  =
 -- |        Typically used in combination with `decelerationRate="fast"`. Overrides less configurable
 -- |        `pagingEnabled` and `snapToInterval` props.
 -- | - `snapToStart`
--- |        Use in conjuction with `snapToOffsets`. By default, the beginning of the list counts as a
+-- |        Use in conjunction with `snapToOffsets`. By default, the beginning of the list counts as a
 -- |        snap offset. Set `snapToStart` to false to disable this behavior and allow the list to scroll
 -- |        freely between its start and the first `snapToOffsets` offset. The default value is true.
 -- | - `stickyHeaderIndices`
@@ -5296,13 +5229,6 @@ listView props = unsafeCreateNativeElement "ListView" props
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -5310,7 +5236,7 @@ listView props = unsafeCreateNativeElement "ListView" props
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -5322,12 +5248,11 @@ listView props = unsafeCreateNativeElement "ListView" props
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -5338,6 +5263,8 @@ listView props = unsafeCreateNativeElement "ListView" props
 -- |        Views that are only used to layout their children or otherwise don't draw anything
 -- |        may be automatically removed from the native hierarchy as an optimization.
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -5378,8 +5305,9 @@ listView props = unsafeCreateNativeElement "ListView" props
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -5489,28 +5417,29 @@ listView props = unsafeCreateNativeElement "ListView" props
 -- |         __*platform* ios__
 
 type MaskedViewIOSProps_optional  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  collapsable :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
   ,  isTVSelectable :: Boolean
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -5547,13 +5476,6 @@ type MaskedViewIOSProps_optional  =
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -5561,7 +5483,7 @@ type MaskedViewIOSProps_optional  =
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -5573,12 +5495,11 @@ type MaskedViewIOSProps_optional  =
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -5589,6 +5510,8 @@ type MaskedViewIOSProps_optional  =
 -- |        Views that are only used to layout their children or otherwise don't draw anything
 -- |        may be automatically removed from the native hierarchy as an optimization.
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -5629,8 +5552,9 @@ type MaskedViewIOSProps_optional  =
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -5809,15 +5733,6 @@ newtype NativeTouchEvent = NativeTouchEvent {
 }
 
 
-type NavState  = {
-    canGoBack  :: (Undefinable  Boolean)
-  , canGoForward  :: (Undefinable  Boolean)
-  , loading  :: (Undefinable  Boolean)
-  , title  :: (Undefinable  String)
-  , url  :: (Undefinable  String)
-}
-
-
 
 -- | - `barTintColor`
 -- |        The default background color of the navigation bar.
@@ -5850,14 +5765,14 @@ type NavState  = {
 -- |        A Boolean value that indicates whether the navigation bar is translucent
 
 type NavigatorIOSProps_optional  = 
-  ( barTintColor :: String
+  ( barTintColor :: NavigatorIOSPropsBarTintColor
   ,  interactivePopGestureEnabled :: Boolean
   ,  itemWrapperStyle :: CSS
   ,  navigationBarHidden :: Boolean
   ,  shadowHidden :: Boolean
   ,  style :: CSS
-  ,  tintColor :: String
-  ,  titleTextColor :: String
+  ,  tintColor :: NavigatorIOSPropsTintColor
+  ,  titleTextColor :: NavigatorIOSPropsTitleTextColor
   ,  translucent :: Boolean
   ,  key :: String
   ,  children :: Array JSX
@@ -5912,6 +5827,7 @@ navigatorIOS props = unsafeCreateNativeElement "NavigatorIOS" props
 
 type PickerIOSItemProps  = 
   ( label :: String
+  ,  textColor :: PickerIOSItemPropsTextColor
   ,  value :: String
   ,  key :: String
   ,  children :: Array JSX
@@ -5930,17 +5846,10 @@ pickerIOSItem_ :: Array JSX -> JSX
 pickerIOSItem_ children = pickerIOSItem { children }
 
 
--- | see <https://facebook.github.io/react-native/docs/pickerios.html>
+-- | see <https://reactnative.dev/docs/pickerios>
 -- |  __*see* PickerIOS.ios.js__
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -5948,7 +5857,7 @@ pickerIOSItem_ children = pickerIOSItem { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -5960,12 +5869,11 @@ pickerIOSItem_ children = pickerIOSItem { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -5976,6 +5884,8 @@ pickerIOSItem_ children = pickerIOSItem { children }
 -- |        Views that are only used to layout their children or otherwise don't draw anything
 -- |        may be automatically removed from the native hierarchy as an optimization.
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -6016,8 +5926,9 @@ pickerIOSItem_ children = pickerIOSItem { children }
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -6127,19 +6038,19 @@ pickerIOSItem_ children = pickerIOSItem { children }
 -- |         __*platform* ios__
 
 type PickerIOSProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  collapsable :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
@@ -6147,9 +6058,10 @@ type PickerIOSProps  =
   ,  itemStyle :: CSS
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -6198,43 +6110,10 @@ pickerIOS_ :: Array JSX -> JSX
 pickerIOS_ children = pickerIOS { children }
 
 
--- |  __*see* Picker.js__
-
-type PickerItemProps_optional  = 
-  ( color :: String
-  ,  testID :: String
-  ,  value :: Foreign
-  ,  key :: String
-  ,  children :: Array JSX
-  )
-
--- |  __*see* Picker.js__
-
-type PickerItemProps_required   optional = 
-  ( label :: String
-  | optional
-  )
-
-
-pickerItem
-  :: forall attrs attrs_  
-  . Union attrs attrs_ (PickerItemProps_optional  )
-  => Record ((PickerItemProps_required  ) attrs)
-  -> JSX
-pickerItem props = unsafeCreateNativeElement "PickerItem" props
-
-
--- | see <https://facebook.github.io/react-native/docs/picker.html>
+-- | see <https://reactnative.dev/docs/picker>
 -- |  __*see* Picker.js__
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -6242,7 +6121,7 @@ pickerItem props = unsafeCreateNativeElement "PickerItem" props
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -6254,12 +6133,11 @@ pickerItem props = unsafeCreateNativeElement "PickerItem" props
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -6274,6 +6152,8 @@ pickerItem props = unsafeCreateNativeElement "PickerItem" props
 -- |        If set to false, the picker will be disabled, i.e. the user will not be able to make a
 -- |        selection.
 -- |         __*platform* android__
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -6322,8 +6202,9 @@ pickerItem props = unsafeCreateNativeElement "PickerItem" props
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -6446,20 +6327,20 @@ pickerItem props = unsafeCreateNativeElement "PickerItem" props
 -- |         __*platform* ios__
 
 type PickerProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  collapsable :: Boolean
   ,  enabled :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
@@ -6468,9 +6349,10 @@ type PickerProps  =
   ,  mode :: String
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -6527,17 +6409,11 @@ type PointPropType  = {
 }
 
 
--- | see <https://facebook.github.io/react-native/docs/progressbarandroid.html>
--- |  __*see* ProgressBarAndroid.android.js__
+-- | ProgressBarAndroid has been extracted from react-native core and will be removed in a future release.
+-- | It can now be installed and imported from `@react-native-community/progress-bar-android` instead of 'react-native'.
+-- | see <https://github.com/react-native-community/progress-bar-android>
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -6545,7 +6421,7 @@ type PointPropType  = {
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -6557,24 +6433,27 @@ type PointPropType  = {
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
 -- | - `accessible`
 -- |        When true, indicates that the view is an accessibility element.
 -- |        By default, all the touchable elements are accessible.
+-- | - `animating`
+-- |        Whether to show the ProgressBar (true, the default) or hide it (false).
 -- | - `collapsable`
 -- |        Views that are only used to layout their children or otherwise don't draw anything
 -- |        may be automatically removed from the native hierarchy as an optimization.
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
 -- | - `color`
 -- |        Color of the progress bar.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -6618,8 +6497,9 @@ type PointPropType  = {
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -6740,20 +6620,21 @@ type PointPropType  = {
 -- |         __*platform* ios__
 
 type ProgressBarAndroidProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
+  ,  animating :: Boolean
   ,  collapsable :: Boolean
-  ,  color :: String
+  ,  color :: ProgressBarAndroidPropsColor
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
@@ -6761,9 +6642,10 @@ type ProgressBarAndroidProps  =
   ,  isTVSelectable :: Boolean
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -6812,17 +6694,10 @@ progressBarAndroid_ :: Array JSX -> JSX
 progressBarAndroid_ children = progressBarAndroid { children }
 
 
--- | see <https://facebook.github.io/react-native/docs/progressviewios.html>
+-- | see <https://reactnative.dev/docs/progressviewios>
 -- |  __*see* ProgressViewIOS.ios.js__
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -6830,7 +6705,7 @@ progressBarAndroid_ children = progressBarAndroid { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -6842,12 +6717,11 @@ progressBarAndroid_ children = progressBarAndroid { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -6858,6 +6732,8 @@ progressBarAndroid_ children = progressBarAndroid { children }
 -- |        Views that are only used to layout their children or otherwise don't draw anything
 -- |        may be automatically removed from the native hierarchy as an optimization.
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -6898,8 +6774,9 @@ progressBarAndroid_ children = progressBarAndroid { children }
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -7021,28 +6898,29 @@ progressBarAndroid_ children = progressBarAndroid { children }
 -- |         __*platform* ios__
 
 type ProgressViewIOSProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  collapsable :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
   ,  isTVSelectable :: Boolean
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -7064,7 +6942,7 @@ type ProgressViewIOSProps  =
   ,  pointerEvents :: String
   ,  progress :: Number
   ,  progressImage :: (Array ImageURISource)
-  ,  progressTintColor :: String
+  ,  progressTintColor :: ProgressViewIOSPropsProgressTintColor
   ,  progressViewStyle :: String
   ,  removeClippedSubviews :: Boolean
   ,  renderToHardwareTextureAndroid :: Boolean
@@ -7072,7 +6950,7 @@ type ProgressViewIOSProps  =
   ,  style :: CSS
   ,  testID :: String
   ,  trackImage :: (Array ImageURISource)
-  ,  trackTintColor :: String
+  ,  trackTintColor :: ProgressViewIOSPropsTrackTintColor
   ,  tvParallaxMagnification :: Number
   ,  tvParallaxProperties :: { enabled :: Boolean, shiftDistanceX :: Number, shiftDistanceY :: Number, tiltAngle :: Number, magnification :: Number, pressMagnification :: Number, pressDuration :: Number, pressDelay :: Number }
   ,  tvParallaxShiftDistanceX :: Number
@@ -7098,13 +6976,6 @@ progressViewIOS_ children = progressViewIOS { children }
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -7112,7 +6983,7 @@ progressViewIOS_ children = progressViewIOS { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -7124,12 +6995,11 @@ progressViewIOS_ children = progressViewIOS { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -7192,18 +7062,40 @@ progressViewIOS_ children = progressViewIOS { children }
 -- |        The default value is {x: 0, y: 0}
 -- | - `decelerationRate`
 -- |        A floating-point number that determines how quickly the scroll view
--- |        decelerates after the user lifts their finger. Reasonable choices include
--- |           - Normal: 0.998 (the default)
--- |           - Fast: 0.9
+-- |        decelerates after the user lifts their finger. You may also use string
+-- |        shortcuts `"normal"` and `"fast"` which match the underlying iOS settings
+-- |        for `UIScrollViewDecelerationRateNormal` and
+-- |        `UIScrollViewDecelerationRateFast` respectively.
+-- |          - `'normal'`: 0.998 on iOS, 0.985 on Android (the default)
+-- |          - `'fast'`: 0.99 on iOS, 0.9 on Android
 -- | - `directionalLockEnabled`
 -- |        When true the ScrollView will try to lock to only vertical or horizontal
 -- |        scrolling while dragging.  The default value is false.
+-- | - `disableIntervalMomentum`
+-- |        When true, the scroll view stops on the next index (in relation to scroll position at release)
+-- |        regardless of how fast the gesture is. This can be used for horizontal pagination when the page
+-- |        is less than the width of the ScrollView. The default value is false.
+-- | - `disableScrollViewPanResponder`
+-- |        When true, the default JS pan responder on the ScrollView is disabled, and full control over
+-- |        touches inside the ScrollView is left to its child components. This is particularly useful
+-- |        if `snapToInterval` is enabled, since it does not follow typical touch patterns. Do not use
+-- |        this on regular ScrollView use cases without `snapToInterval` as it may cause unexpected
+-- |        touches to occur while scrolling. The default value is false.
 -- | - `endFillColor`
 -- |        Sometimes a scrollview takes up more space than its content fills.
 -- |        When this is the case, this prop will fill the rest of the
 -- |        scrollview with a color to avoid setting a background and creating
 -- |        unnecessary overdraw. This is an advanced optimization that is not
 -- |        needed in the general case.
+-- | - `fadingEdgeLength`
+-- |        Fades out the edges of the the scroll content.
+-- |        If the value is greater than 0, the fading edges will be set accordingly
+-- |        to the current scroll direction and position,
+-- |        indicating if there is more content to show.
+-- |        The default value is 0.
+-- |         __*platform* android__
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -7256,6 +7148,24 @@ progressViewIOS_ children = progressViewIOS { children }
 -- |        - 'handled', the keyboard will not dismiss automatically when the tap was handled by a children, (or captured by an ancestor).
 -- |        - false, deprecated, use 'never' instead
 -- |        - true, deprecated, use 'always' instead
+-- | - `maintainVisibleContentPosition`
+-- |        When set, the scroll view will adjust the scroll position so that the first child
+-- |        that is currently visible and at or beyond minIndexForVisible will not change position.
+-- |        This is useful for lists that are loading content in both directions, e.g. a chat thread,
+-- |        where new messages coming in might otherwise cause the scroll position to jump. A value
+-- |        of 0 is common, but other values such as 1 can be used to skip loading spinners or other
+-- |        content that should not maintain position.
+-- |        The optional autoscrollToTopThreshold can be used to make the content automatically scroll
+-- |        to the top after making the adjustment if the user was within the threshold of the top
+-- |        before the adjustment was made. This is also useful for chat-like applications where you
+-- |        want to see new messages scroll into place, but not if the user has scrolled up a ways and
+-- |        it would be disruptive to scroll a bunch.
+-- |        Caveat 1: Reordering elements in the scrollview with this enabled will probably cause
+-- |        jumpiness and jank. It can be fixed, but there are currently no plans to do so. For now,
+-- |        don't re-order the content of any ScrollViews or Lists that use this feature.
+-- |        Caveat 2: This uses contentOffset and frame.origin in native code to compute visibility.
+-- |        Occlusion, transforms, and other complexity won't be taken into account as to whether
+-- |        content is "visible" or not.
 -- | - `maximumZoomScale`
 -- |        The maximum allowed zoom scale. The default value is 1.0.
 -- | - `minimumZoomScale`
@@ -7277,8 +7187,9 @@ progressViewIOS_ children = progressViewIOS { children }
 -- | - `nestedScrollEnabled`
 -- |        Enables nested scrolling for Android API level 21+. Nested scrolling is supported by default on iOS.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -7338,6 +7249,9 @@ progressViewIOS_ children = progressViewIOS { children }
 -- |        Fires if a user initiates a scroll gesture.
 -- | - `onScrollEndDrag`
 -- |        Fires when a user has finished scrolling.
+-- | - `onScrollToTop`
+-- |        Fires when the scroll view scrolls to top after the status bar has been tapped
+-- |         __*platform* ios__
 -- | - `onStartShouldSetResponder`
 -- |        A view can become the touch responder by implementing the correct negotiation methods.
 -- |        There are two methods to ask the view if it wants to become responder:
@@ -7363,6 +7277,8 @@ progressViewIOS_ children = progressViewIOS { children }
 -- |        When true the scroll view stops on multiples of the scroll view's size
 -- |        when scrolling. This can be used for horizontal pagination. The default
 -- |        value is false.
+-- | - `persistentScrollbar`
+-- |        Causes the scrollbars not to turn transparent when they are not in use. The default value is false.
 -- | - `pinchGestureEnabled`
 -- |        When true, ScrollView allows use of pinch gestures to zoom in and out.
 -- |        The default value is true.
@@ -7413,6 +7329,10 @@ progressViewIOS_ children = progressViewIOS { children }
 -- |        anything out of the box and you need to implement a custom native
 -- |        FpsListener for it to be useful.
 -- |         __*platform* android__
+-- | - `scrollToOverflowEnabled`
+-- |        When true, the scroll view can be programmatically scrolled beyond its
+-- |        content size. The default value is false.
+-- |         __*platform* ios__
 -- | - `scrollsToTop`
 -- |        When true the scroll view scrolls to top when the status bar is tapped.
 -- |        The default value is true.
@@ -7433,7 +7353,7 @@ progressViewIOS_ children = progressViewIOS { children }
 -- |              - `center` will align the snap in the center
 -- |              - `end` will align the snap at the right (horizontal) or bottom (vertical)
 -- | - `snapToEnd`
--- |        Use in conjuction with `snapToOffsets`. By default, the end of the list counts as a snap
+-- |        Use in conjunction with `snapToOffsets`. By default, the end of the list counts as a snap
 -- |        offset. Set `snapToEnd` to false to disable this behavior and allow the list to scroll freely
 -- |        between its end and the last `snapToOffsets` offset. The default value is true.
 -- | - `snapToInterval`
@@ -7447,7 +7367,7 @@ progressViewIOS_ children = progressViewIOS { children }
 -- |        Typically used in combination with `decelerationRate="fast"`. Overrides less configurable
 -- |        `pagingEnabled` and `snapToInterval` props.
 -- | - `snapToStart`
--- |        Use in conjuction with `snapToOffsets`. By default, the beginning of the list counts as a
+-- |        Use in conjunction with `snapToOffsets`. By default, the beginning of the list counts as a
 -- |        snap offset. Set `snapToStart` to false to disable this behavior and allow the list to scroll
 -- |        freely between its start and the first `snapToOffsets` offset. The default value is true.
 -- | - `stickyHeaderIndices`
@@ -7479,16 +7399,15 @@ progressViewIOS_ children = progressViewIOS { children }
 -- |        The current scale of the scroll view content. The default value is 1.0.
 
 type RecyclerViewBackedScrollViewProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  alwaysBounceHorizontal :: Boolean
@@ -7505,25 +7424,31 @@ type RecyclerViewBackedScrollViewProps  =
   ,  contentOffset :: PointPropType
   ,  decelerationRate :: String
   ,  directionalLockEnabled :: Boolean
-  ,  endFillColor :: String
+  ,  disableIntervalMomentum :: Boolean
+  ,  disableScrollViewPanResponder :: Boolean
+  ,  endFillColor :: ScrollViewPropsAndroidEndFillColor
+  ,  fadingEdgeLength :: Number
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
-  ,  horizontal :: Boolean
+  ,  horizontal :: String
   ,  importantForAccessibility :: String
   ,  indicatorStyle :: String
   ,  invertStickyHeaders :: Boolean
   ,  isTVSelectable :: Boolean
   ,  keyboardDismissMode :: String
   ,  keyboardShouldPersistTaps :: String
+  ,  maintainVisibleContentPosition :: { autoscrollToTopThreshold :: String, minIndexForVisible :: Number }
   ,  maximumZoomScale :: Number
   ,  minimumZoomScale :: Number
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
   ,  nestedScrollEnabled :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
   ,  onContentSizeChange :: (EffectFn2 Number Number Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMomentumScrollBegin :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
   ,  onMomentumScrollEnd :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
@@ -7541,6 +7466,7 @@ type RecyclerViewBackedScrollViewProps  =
   ,  onScrollAnimationEnd :: (Effect Unit)
   ,  onScrollBeginDrag :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
   ,  onScrollEndDrag :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
+  ,  onScrollToTop :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
   ,  onStartShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onStartShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onTouchCancel :: (EffectFn1 GestureResponderEvent Unit)
@@ -7550,6 +7476,7 @@ type RecyclerViewBackedScrollViewProps  =
   ,  onTouchStart :: (EffectFn1 GestureResponderEvent Unit)
   ,  overScrollMode :: String
   ,  pagingEnabled :: Boolean
+  ,  persistentScrollbar :: Boolean
   ,  pinchGestureEnabled :: Boolean
   ,  pointerEvents :: String
   ,  refreshControl :: JSX
@@ -7559,6 +7486,7 @@ type RecyclerViewBackedScrollViewProps  =
   ,  scrollEventThrottle :: Number
   ,  scrollIndicatorInsets :: Insets
   ,  scrollPerfTag :: String
+  ,  scrollToOverflowEnabled :: Boolean
   ,  scrollsToTop :: Boolean
   ,  shouldRasterizeIOS :: Boolean
   ,  showsHorizontalScrollIndicator :: Boolean
@@ -7597,13 +7525,6 @@ recyclerViewBackedScrollView_ children = recyclerViewBackedScrollView { children
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -7611,7 +7532,7 @@ recyclerViewBackedScrollView_ children = recyclerViewBackedScrollView { children
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -7623,12 +7544,11 @@ recyclerViewBackedScrollView_ children = recyclerViewBackedScrollView { children
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -7643,6 +7563,8 @@ recyclerViewBackedScrollView_ children = recyclerViewBackedScrollView { children
 -- |        The colors (at least one) that will be used to draw the refresh indicator.
 -- | - `enabled`
 -- |        Whether the pull to refresh functionality is enabled.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -7683,8 +7605,9 @@ recyclerViewBackedScrollView_ children = recyclerViewBackedScrollView { children
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -7811,30 +7734,31 @@ recyclerViewBackedScrollView_ children = recyclerViewBackedScrollView { children
 -- |         __*platform* ios__
 
 type RefreshControlProps_optional  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  collapsable :: Boolean
-  ,  colors :: (Array String)
+  ,  colors :: (Array RefreshControlPropsAndroidColors)
   ,  enabled :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
   ,  isTVSelectable :: Boolean
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -7855,7 +7779,7 @@ type RefreshControlProps_optional  =
   ,  onTouchMove :: (EffectFn1 GestureResponderEvent Unit)
   ,  onTouchStart :: (EffectFn1 GestureResponderEvent Unit)
   ,  pointerEvents :: String
-  ,  progressBackgroundColor :: String
+  ,  progressBackgroundColor :: RefreshControlPropsAndroidProgressBackgroundColor
   ,  progressViewOffset :: Number
   ,  removeClippedSubviews :: Boolean
   ,  renderToHardwareTextureAndroid :: Boolean
@@ -7863,9 +7787,9 @@ type RefreshControlProps_optional  =
   ,  size :: Number
   ,  style :: CSS
   ,  testID :: String
-  ,  tintColor :: String
+  ,  tintColor :: RefreshControlPropsIOSTintColor
   ,  title :: String
-  ,  titleColor :: String
+  ,  titleColor :: RefreshControlPropsIOSTitleColor
   ,  tvParallaxMagnification :: Number
   ,  tvParallaxProperties :: { enabled :: Boolean, shiftDistanceX :: Number, shiftDistanceY :: Number, tiltAngle :: Number, magnification :: Number, pressMagnification :: Number, pressDuration :: Number, pressDelay :: Number }
   ,  tvParallaxShiftDistanceX :: Number
@@ -7878,13 +7802,6 @@ type RefreshControlProps_optional  =
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -7892,7 +7809,7 @@ type RefreshControlProps_optional  =
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -7904,12 +7821,11 @@ type RefreshControlProps_optional  =
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -7924,6 +7840,8 @@ type RefreshControlProps_optional  =
 -- |        The colors (at least one) that will be used to draw the refresh indicator.
 -- | - `enabled`
 -- |        Whether the pull to refresh functionality is enabled.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -7964,8 +7882,9 @@ type RefreshControlProps_optional  =
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -8123,13 +8042,6 @@ type Route  = {
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -8137,7 +8049,7 @@ type Route  = {
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -8149,12 +8061,11 @@ type Route  = {
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -8217,18 +8128,40 @@ type Route  = {
 -- |        The default value is {x: 0, y: 0}
 -- | - `decelerationRate`
 -- |        A floating-point number that determines how quickly the scroll view
--- |        decelerates after the user lifts their finger. Reasonable choices include
--- |           - Normal: 0.998 (the default)
--- |           - Fast: 0.9
+-- |        decelerates after the user lifts their finger. You may also use string
+-- |        shortcuts `"normal"` and `"fast"` which match the underlying iOS settings
+-- |        for `UIScrollViewDecelerationRateNormal` and
+-- |        `UIScrollViewDecelerationRateFast` respectively.
+-- |          - `'normal'`: 0.998 on iOS, 0.985 on Android (the default)
+-- |          - `'fast'`: 0.99 on iOS, 0.9 on Android
 -- | - `directionalLockEnabled`
 -- |        When true the ScrollView will try to lock to only vertical or horizontal
 -- |        scrolling while dragging.  The default value is false.
+-- | - `disableIntervalMomentum`
+-- |        When true, the scroll view stops on the next index (in relation to scroll position at release)
+-- |        regardless of how fast the gesture is. This can be used for horizontal pagination when the page
+-- |        is less than the width of the ScrollView. The default value is false.
+-- | - `disableScrollViewPanResponder`
+-- |        When true, the default JS pan responder on the ScrollView is disabled, and full control over
+-- |        touches inside the ScrollView is left to its child components. This is particularly useful
+-- |        if `snapToInterval` is enabled, since it does not follow typical touch patterns. Do not use
+-- |        this on regular ScrollView use cases without `snapToInterval` as it may cause unexpected
+-- |        touches to occur while scrolling. The default value is false.
 -- | - `endFillColor`
 -- |        Sometimes a scrollview takes up more space than its content fills.
 -- |        When this is the case, this prop will fill the rest of the
 -- |        scrollview with a color to avoid setting a background and creating
 -- |        unnecessary overdraw. This is an advanced optimization that is not
 -- |        needed in the general case.
+-- | - `fadingEdgeLength`
+-- |        Fades out the edges of the the scroll content.
+-- |        If the value is greater than 0, the fading edges will be set accordingly
+-- |        to the current scroll direction and position,
+-- |        indicating if there is more content to show.
+-- |        The default value is 0.
+-- |         __*platform* android__
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -8281,6 +8214,24 @@ type Route  = {
 -- |        - 'handled', the keyboard will not dismiss automatically when the tap was handled by a children, (or captured by an ancestor).
 -- |        - false, deprecated, use 'never' instead
 -- |        - true, deprecated, use 'always' instead
+-- | - `maintainVisibleContentPosition`
+-- |        When set, the scroll view will adjust the scroll position so that the first child
+-- |        that is currently visible and at or beyond minIndexForVisible will not change position.
+-- |        This is useful for lists that are loading content in both directions, e.g. a chat thread,
+-- |        where new messages coming in might otherwise cause the scroll position to jump. A value
+-- |        of 0 is common, but other values such as 1 can be used to skip loading spinners or other
+-- |        content that should not maintain position.
+-- |        The optional autoscrollToTopThreshold can be used to make the content automatically scroll
+-- |        to the top after making the adjustment if the user was within the threshold of the top
+-- |        before the adjustment was made. This is also useful for chat-like applications where you
+-- |        want to see new messages scroll into place, but not if the user has scrolled up a ways and
+-- |        it would be disruptive to scroll a bunch.
+-- |        Caveat 1: Reordering elements in the scrollview with this enabled will probably cause
+-- |        jumpiness and jank. It can be fixed, but there are currently no plans to do so. For now,
+-- |        don't re-order the content of any ScrollViews or Lists that use this feature.
+-- |        Caveat 2: This uses contentOffset and frame.origin in native code to compute visibility.
+-- |        Occlusion, transforms, and other complexity won't be taken into account as to whether
+-- |        content is "visible" or not.
 -- | - `maximumZoomScale`
 -- |        The maximum allowed zoom scale. The default value is 1.0.
 -- | - `minimumZoomScale`
@@ -8302,8 +8253,9 @@ type Route  = {
 -- | - `nestedScrollEnabled`
 -- |        Enables nested scrolling for Android API level 21+. Nested scrolling is supported by default on iOS.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -8363,6 +8315,9 @@ type Route  = {
 -- |        Fires if a user initiates a scroll gesture.
 -- | - `onScrollEndDrag`
 -- |        Fires when a user has finished scrolling.
+-- | - `onScrollToTop`
+-- |        Fires when the scroll view scrolls to top after the status bar has been tapped
+-- |         __*platform* ios__
 -- | - `onStartShouldSetResponder`
 -- |        A view can become the touch responder by implementing the correct negotiation methods.
 -- |        There are two methods to ask the view if it wants to become responder:
@@ -8388,6 +8343,8 @@ type Route  = {
 -- |        When true the scroll view stops on multiples of the scroll view's size
 -- |        when scrolling. This can be used for horizontal pagination. The default
 -- |        value is false.
+-- | - `persistentScrollbar`
+-- |        Causes the scrollbars not to turn transparent when they are not in use. The default value is false.
 -- | - `pinchGestureEnabled`
 -- |        When true, ScrollView allows use of pinch gestures to zoom in and out.
 -- |        The default value is true.
@@ -8438,6 +8395,10 @@ type Route  = {
 -- |        anything out of the box and you need to implement a custom native
 -- |        FpsListener for it to be useful.
 -- |         __*platform* android__
+-- | - `scrollToOverflowEnabled`
+-- |        When true, the scroll view can be programmatically scrolled beyond its
+-- |        content size. The default value is false.
+-- |         __*platform* ios__
 -- | - `scrollsToTop`
 -- |        When true the scroll view scrolls to top when the status bar is tapped.
 -- |        The default value is true.
@@ -8458,7 +8419,7 @@ type Route  = {
 -- |              - `center` will align the snap in the center
 -- |              - `end` will align the snap at the right (horizontal) or bottom (vertical)
 -- | - `snapToEnd`
--- |        Use in conjuction with `snapToOffsets`. By default, the end of the list counts as a snap
+-- |        Use in conjunction with `snapToOffsets`. By default, the end of the list counts as a snap
 -- |        offset. Set `snapToEnd` to false to disable this behavior and allow the list to scroll freely
 -- |        between its end and the last `snapToOffsets` offset. The default value is true.
 -- | - `snapToInterval`
@@ -8472,7 +8433,7 @@ type Route  = {
 -- |        Typically used in combination with `decelerationRate="fast"`. Overrides less configurable
 -- |        `pagingEnabled` and `snapToInterval` props.
 -- | - `snapToStart`
--- |        Use in conjuction with `snapToOffsets`. By default, the beginning of the list counts as a
+-- |        Use in conjunction with `snapToOffsets`. By default, the beginning of the list counts as a
 -- |        snap offset. Set `snapToStart` to false to disable this behavior and allow the list to scroll
 -- |        freely between its start and the first `snapToOffsets` offset. The default value is true.
 -- | - `stickyHeaderIndices`
@@ -8504,16 +8465,15 @@ type Route  = {
 -- |        The current scale of the scroll view content. The default value is 1.0.
 
 type ScrollViewProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  alwaysBounceHorizontal :: Boolean
@@ -8530,25 +8490,31 @@ type ScrollViewProps  =
   ,  contentOffset :: PointPropType
   ,  decelerationRate :: String
   ,  directionalLockEnabled :: Boolean
-  ,  endFillColor :: String
+  ,  disableIntervalMomentum :: Boolean
+  ,  disableScrollViewPanResponder :: Boolean
+  ,  endFillColor :: ScrollViewPropsAndroidEndFillColor
+  ,  fadingEdgeLength :: Number
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
-  ,  horizontal :: Boolean
+  ,  horizontal :: String
   ,  importantForAccessibility :: String
   ,  indicatorStyle :: String
   ,  invertStickyHeaders :: Boolean
   ,  isTVSelectable :: Boolean
   ,  keyboardDismissMode :: String
   ,  keyboardShouldPersistTaps :: String
+  ,  maintainVisibleContentPosition :: { autoscrollToTopThreshold :: String, minIndexForVisible :: Number }
   ,  maximumZoomScale :: Number
   ,  minimumZoomScale :: Number
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
   ,  nestedScrollEnabled :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
   ,  onContentSizeChange :: (EffectFn2 Number Number Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMomentumScrollBegin :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
   ,  onMomentumScrollEnd :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
@@ -8566,6 +8532,7 @@ type ScrollViewProps  =
   ,  onScrollAnimationEnd :: (Effect Unit)
   ,  onScrollBeginDrag :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
   ,  onScrollEndDrag :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
+  ,  onScrollToTop :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
   ,  onStartShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onStartShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onTouchCancel :: (EffectFn1 GestureResponderEvent Unit)
@@ -8575,6 +8542,7 @@ type ScrollViewProps  =
   ,  onTouchStart :: (EffectFn1 GestureResponderEvent Unit)
   ,  overScrollMode :: String
   ,  pagingEnabled :: Boolean
+  ,  persistentScrollbar :: Boolean
   ,  pinchGestureEnabled :: Boolean
   ,  pointerEvents :: String
   ,  refreshControl :: JSX
@@ -8584,6 +8552,7 @@ type ScrollViewProps  =
   ,  scrollEventThrottle :: Number
   ,  scrollIndicatorInsets :: Insets
   ,  scrollPerfTag :: String
+  ,  scrollToOverflowEnabled :: Boolean
   ,  scrollsToTop :: Boolean
   ,  shouldRasterizeIOS :: Boolean
   ,  showsHorizontalScrollIndicator :: Boolean
@@ -8619,16 +8588,28 @@ scrollView_ :: Array JSX -> JSX
 scrollView_ children = scrollView { children }
 
 
+type SectionBase itemT sectionT = {
+    "ItemSeparatorComponent"  :: (Undefinable  JSX)
+  , data :: (Array itemT)
+  , key  :: (Undefinable  String)
+  , keyExtractor  :: (Undefinable  (EffectFn2 itemT Number String))
+  , renderItem  :: (Undefinable  (EffectFn1 (SectionListRenderItemInfo itemT sectionT) JSX))
+}
 
+
+
+-- | - `ItemSeparatorComponent`
+-- |        Rendered in between adjacent Items within each section.
+-- | - `ListEmptyComponent`
+-- |        Rendered when the list is empty.
+-- | - `ListFooterComponent`
+-- |        Rendered at the very end of the list.
+-- | - `ListHeaderComponent`
+-- |        Rendered at the very beginning of the list.
+-- | - `SectionSeparatorComponent`
+-- |        Rendered in between each section.
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -8636,7 +8617,7 @@ scrollView_ children = scrollView { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -8648,12 +8629,1204 @@ scrollView_ children = scrollView { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
+-- | - `accessibilityViewIsModal`
+-- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
+-- | - `accessible`
+-- |        When true, indicates that the view is an accessibility element.
+-- |        By default, all the touchable elements are accessible.
+-- | - `alwaysBounceHorizontal`
+-- |        When true the scroll view bounces horizontally when it reaches the end
+-- |        even if the content is smaller than the scroll view itself. The default
+-- |        value is true when `horizontal={true}` and false otherwise.
+-- | - `alwaysBounceVertical`
+-- |        When true the scroll view bounces vertically when it reaches the end
+-- |        even if the content is smaller than the scroll view itself. The default
+-- |        value is false when `horizontal={true}` and true otherwise.
+-- | - `automaticallyAdjustContentInsets`
+-- |        Controls whether iOS should automatically adjust the content inset for scroll views that are placed behind a navigation bar or tab bar/ toolbar.
+-- |        The default value is true.
+-- | - `bounces`
+-- |        When true the scroll view bounces when it reaches the end of the
+-- |        content if the content is larger then the scroll view along the axis of
+-- |        the scroll direction. When false it disables all bouncing even if
+-- |        the `alwaysBounce*` props are true. The default value is true.
+-- | - `bouncesZoom`
+-- |        When true gestures can drive zoom past min/max and the zoom will animate
+-- |        to the min/max value at gesture end otherwise the zoom will not exceed
+-- |        the limits.
+-- | - `canCancelContentTouches`
+-- |        When false once tracking starts won't try to drag if the touch moves.
+-- |        The default value is true.
+-- | - `centerContent`
+-- |        When true the scroll view automatically centers the content when the
+-- |        content is smaller than the scroll view bounds; when the content is
+-- |        larger than the scroll view this property has no effect. The default
+-- |        value is false.
+-- | - `collapsable`
+-- |        Views that are only used to layout their children or otherwise don't draw anything
+-- |        may be automatically removed from the native hierarchy as an optimization.
+-- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+-- | - `contentContainerStyle`
+-- |        These styles will be applied to the scroll view content container which
+-- |        wraps all of the child views. Example:
+-- |           return (
+-- |             <ScrollView contentContainerStyle={styles.contentContainer}>
+-- |             </ScrollView>
+-- |           );
+-- |           ...
+-- |           const styles = StyleSheet.create({
+-- |             contentContainer: {
+-- |               paddingVertical: 20
+-- |             }
+-- |           });
+-- | - `contentInset`
+-- |        The amount by which the scroll view content is inset from the edges of the scroll view.
+-- |        Defaults to {0, 0, 0, 0}.
+-- | - `contentInsetAdjustmentBehavior`
+-- |        This property specifies how the safe area insets are used to modify the content area of the scroll view.
+-- |        The default value of this property must be 'automatic'. But the default value is 'never' until RN@0.51.
+-- | - `contentOffset`
+-- |        Used to manually set the starting scroll offset.
+-- |        The default value is {x: 0, y: 0}
+-- | - `data`
+-- |        The default accessor functions assume this is an Array<{key: string}> but you can override
+-- |        getItem, getItemCount, and keyExtractor to handle any type of index-based data.
+-- | - `debug`
+-- |        `debug` will turn on extra logging and visual overlays to aid with debugging both usage and
+-- |        implementation, but with a significant perf hit.
+-- | - `decelerationRate`
+-- |        A floating-point number that determines how quickly the scroll view
+-- |        decelerates after the user lifts their finger. You may also use string
+-- |        shortcuts `"normal"` and `"fast"` which match the underlying iOS settings
+-- |        for `UIScrollViewDecelerationRateNormal` and
+-- |        `UIScrollViewDecelerationRateFast` respectively.
+-- |          - `'normal'`: 0.998 on iOS, 0.985 on Android (the default)
+-- |          - `'fast'`: 0.99 on iOS, 0.9 on Android
+-- | - `directionalLockEnabled`
+-- |        When true the ScrollView will try to lock to only vertical or horizontal
+-- |        scrolling while dragging.  The default value is false.
+-- | - `disableIntervalMomentum`
+-- |        When true, the scroll view stops on the next index (in relation to scroll position at release)
+-- |        regardless of how fast the gesture is. This can be used for horizontal pagination when the page
+-- |        is less than the width of the ScrollView. The default value is false.
+-- | - `disableScrollViewPanResponder`
+-- |        When true, the default JS pan responder on the ScrollView is disabled, and full control over
+-- |        touches inside the ScrollView is left to its child components. This is particularly useful
+-- |        if `snapToInterval` is enabled, since it does not follow typical touch patterns. Do not use
+-- |        this on regular ScrollView use cases without `snapToInterval` as it may cause unexpected
+-- |        touches to occur while scrolling. The default value is false.
+-- | - `disableVirtualization`
+-- |        DEPRECATED: Virtualization provides significant performance and memory optimizations, but fully
+-- |        unmounts react instances that are outside of the render window. You should only need to disable
+-- |        this for debugging purposes.
+-- | - `endFillColor`
+-- |        Sometimes a scrollview takes up more space than its content fills.
+-- |        When this is the case, this prop will fill the rest of the
+-- |        scrollview with a color to avoid setting a background and creating
+-- |        unnecessary overdraw. This is an advanced optimization that is not
+-- |        needed in the general case.
+-- | - `extraData`
+-- |        A marker property for telling the list to re-render (since it implements PureComponent).
+-- |        If any of your `renderItem`, Header, Footer, etc. functions depend on anything outside of the `data` prop,
+-- |        stick it here and treat it immutably.
+-- | - `fadingEdgeLength`
+-- |        Fades out the edges of the the scroll content.
+-- |        If the value is greater than 0, the fading edges will be set accordingly
+-- |        to the current scroll direction and position,
+-- |        indicating if there is more content to show.
+-- |        The default value is 0.
+-- |         __*platform* android__
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
+-- | - `getItem`
+-- |        A generic accessor for extracting an item from any sort of data blob.
+-- | - `getItemCount`
+-- |        Determines how many items are in the data blob.
+-- | - `getItemLayout`
+-- |        `getItemLayout` is an optional optimization that lets us skip measurement of dynamic
+-- |        content if you know the height of items a priori. getItemLayout is the most efficient,
+-- |        and is easy to use if you have fixed height items, for example:
+-- |        ```
+-- |        getItemLayout={(data, index) => (
+-- |           {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
+-- |        )}
+-- |        ```
+-- | - `hasTVPreferredFocus`
+-- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
+-- |         __*platform* ios__
+-- | - `hitSlop`
+-- |        This defines how far a touch event can start away from the view.
+-- |        Typical interface guidelines recommend touch targets that are at least
+-- |        30 - 40 points/density-independent pixels. If a Touchable view has
+-- |        a height of 20 the touchable height can be extended to 40 with
+-- |        hitSlop={{top: 10, bottom: 10, left: 0, right: 0}}
+-- |        NOTE The touch area never extends past the parent view bounds and
+-- |        the Z-index of sibling views always takes precedence if a touch
+-- |        hits two overlapping views.
+-- | - `importantForAccessibility`
+-- |        Controls how view is important for accessibility which is if it fires accessibility events
+-- |        and if it is reported to accessibility services that query the screen.
+-- |        Works for Android only. See http://developer.android.com/reference/android/R.attr.html#importantForAccessibility for references.
+-- |        Possible values:
+-- |              'auto' - The system determines whether the view is important for accessibility - default (recommended).
+-- |              'yes' - The view is important for accessibility.
+-- |              'no' - The view is not important for accessibility.
+-- |              'no-hide-descendants' - The view is not important for accessibility, nor are any of its descendant views.
+-- | - `indicatorStyle`
+-- |        The style of the scroll indicators.
+-- |        - default (the default), same as black.
+-- |        - black, scroll indicator is black. This style is good against
+-- |           a white content background.
+-- |        - white, scroll indicator is white. This style is good against
+-- |           a black content background.
+-- | - `initialNumToRender`
+-- |        How many items to render in the initial batch
+-- | - `initialScrollIndex`
+-- |        Instead of starting at the top with the first item, start at `initialScrollIndex`. This
+-- |        disables the "scroll to top" optimization that keeps the first `initialNumToRender` items
+-- |        always rendered and immediately renders the items starting at this initial index. Requires
+-- |        `getItemLayout` to be implemented.
+-- | - `invertStickyHeaders`
+-- |        If sticky headers should stick at the bottom instead of the top of the
+-- |        ScrollView. This is usually used with inverted ScrollViews.
+-- | - `inverted`
+-- |        Reverses the direction of scroll. Uses scale transforms of -1.
+-- | - `isTVSelectable`
+-- |        *(Apple TV only)* When set to true, this view will be focusable
+-- |        and navigable using the Apple TV remote.
+-- |         __*platform* ios__
+-- | - `keyExtractor`
+-- |        Used to extract a unique key for a given item at the specified index. Key is used for caching
+-- |        and as the react key to track item re-ordering. The default extractor checks `item.key`, then
+-- |        falls back to using the index, like React does.
+-- | - `keyboardDismissMode`
+-- |        Determines whether the keyboard gets dismissed in response to a drag.
+-- |           - 'none' (the default) drags do not dismiss the keyboard.
+-- |           - 'onDrag' the keyboard is dismissed when a drag begins.
+-- |           - 'interactive' the keyboard is dismissed interactively with the drag
+-- |             and moves in synchrony with the touch; dragging upwards cancels the
+-- |             dismissal.
+-- | - `keyboardShouldPersistTaps`
+-- |        Determines when the keyboard should stay visible after a tap.
+-- |        - 'never' (the default), tapping outside of the focused text input when the keyboard is up dismisses the keyboard. When this happens, children won't receive the tap.
+-- |        - 'always', the keyboard will not dismiss automatically, and the scroll view will not catch taps, but children of the scroll view can catch taps.
+-- |        - 'handled', the keyboard will not dismiss automatically when the tap was handled by a children, (or captured by an ancestor).
+-- |        - false, deprecated, use 'never' instead
+-- |        - true, deprecated, use 'always' instead
+-- | - `legacyImplementation`
+-- |        Uses legacy MetroListView instead of default VirtualizedSectionList
+-- | - `maintainVisibleContentPosition`
+-- |        When set, the scroll view will adjust the scroll position so that the first child
+-- |        that is currently visible and at or beyond minIndexForVisible will not change position.
+-- |        This is useful for lists that are loading content in both directions, e.g. a chat thread,
+-- |        where new messages coming in might otherwise cause the scroll position to jump. A value
+-- |        of 0 is common, but other values such as 1 can be used to skip loading spinners or other
+-- |        content that should not maintain position.
+-- |        The optional autoscrollToTopThreshold can be used to make the content automatically scroll
+-- |        to the top after making the adjustment if the user was within the threshold of the top
+-- |        before the adjustment was made. This is also useful for chat-like applications where you
+-- |        want to see new messages scroll into place, but not if the user has scrolled up a ways and
+-- |        it would be disruptive to scroll a bunch.
+-- |        Caveat 1: Reordering elements in the scrollview with this enabled will probably cause
+-- |        jumpiness and jank. It can be fixed, but there are currently no plans to do so. For now,
+-- |        don't re-order the content of any ScrollViews or Lists that use this feature.
+-- |        Caveat 2: This uses contentOffset and frame.origin in native code to compute visibility.
+-- |        Occlusion, transforms, and other complexity won't be taken into account as to whether
+-- |        content is "visible" or not.
+-- | - `maxToRenderPerBatch`
+-- |        The maximum number of items to render in each incremental render batch. The more rendered at
+-- |        once, the better the fill rate, but responsiveness my suffer because rendering content may
+-- |        interfere with responding to button taps or other interactions.
+-- | - `maximumZoomScale`
+-- |        The maximum allowed zoom scale. The default value is 1.0.
+-- | - `minimumZoomScale`
+-- |        The minimum allowed zoom scale. The default value is 1.0.
+-- | - `nativeID`
+-- |        Used to reference react managed views from native code.
+-- | - `needsOffscreenAlphaCompositing`
+-- |        Whether this view needs to rendered offscreen and composited with an alpha in order to preserve 100% correct colors and blending behavior.
+-- |        The default (false) falls back to drawing the component and its children
+-- |        with an alpha applied to the paint used to draw each element instead of rendering the full component offscreen and compositing it back with an alpha value.
+-- |        This default may be noticeable and undesired in the case where the View you are setting an opacity on
+-- |        has multiple overlapping elements (e.g. multiple overlapping Views, or text and a background).
+-- |        Rendering offscreen to preserve correct alpha behavior is extremely expensive
+-- |        and hard to debug for non-native developers, which is why it is not turned on by default.
+-- |        If you do need to enable this property for an animation,
+-- |        consider combining it with renderToHardwareTextureAndroid if the view contents are static (i.e. it doesn't need to be redrawn each frame).
+-- |        If that property is enabled, this View will be rendered off-screen once,
+-- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
+-- | - `nestedScrollEnabled`
+-- |        Enables nested scrolling for Android API level 21+. Nested scrolling is supported by default on iOS.
+-- | - `onAccessibilityAction`
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
+-- |         __*platform* ios__
+-- | - `onAccessibilityTap`
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
+-- |         __*platform* ios__
+-- | - `onContentSizeChange`
+-- |        Called when scrollable content view of the ScrollView changes.
+-- |        Handler function is passed the content width and content height as parameters: (contentWidth, contentHeight)
+-- |        It's implemented using onLayout handler attached to the content container which this ScrollView renders.
+-- | - `onEndReached`
+-- |        Called once when the scroll position gets within onEndReachedThreshold of the rendered content.
+-- | - `onEndReachedThreshold`
+-- |        How far from the end (in units of visible length of the list) the bottom edge of the
+-- |        list must be from the end of the content to trigger the `onEndReached` callback.
+-- |        Thus a value of 0.5 will trigger `onEndReached` when the end of the content is
+-- |        within half the visible length of the list.
+-- | - `onMagicTap`
+-- |        When accessible is true, the system will invoke this function when the user performs the magic tap gesture.
+-- |         __*platform* ios__
+-- | - `onMomentumScrollBegin`
+-- |        Fires when scroll view has begun moving
+-- | - `onMomentumScrollEnd`
+-- |        Fires when scroll view has finished moving
+-- | - `onMoveShouldSetResponder`
+-- |        Called for every touch move on the View when it is not the responder: does this view want to "claim" touch responsiveness?
+-- | - `onMoveShouldSetResponderCapture`
+-- |        onStartShouldSetResponder and onMoveShouldSetResponder are called with a bubbling pattern,
+-- |        where the deepest node is called first.
+-- |        That means that the deepest component will become responder when multiple Views return true for *ShouldSetResponder handlers.
+-- |        This is desirable in most cases, because it makes sure all controls and buttons are usable.
+-- |        However, sometimes a parent will want to make sure that it becomes responder.
+-- |        This can be handled by using the capture phase.
+-- |        Before the responder system bubbles up from the deepest component,
+-- |        it will do a capture phase, firing on*ShouldSetResponderCapture.
+-- |        So if a parent View wants to prevent the child from becoming responder on a touch start,
+-- |        it should have a onStartShouldSetResponderCapture handler which returns true.
+-- | - `onRefresh`
+-- |        If provided, a standard RefreshControl will be added for "Pull to Refresh" functionality.
+-- |        Make sure to also set the refreshing prop correctly.
+-- | - `onResponderEnd`
+-- |        If the View returns true and attempts to become the responder, one of the following will happen:
+-- | - `onResponderGrant`
+-- |        The View is now responding for touch events.
+-- |        This is the time to highlight and show the user what is happening
+-- | - `onResponderMove`
+-- |        If the view is responding, the following handlers can be called:
+-- |        The user is moving their finger
+-- | - `onResponderReject`
+-- |        Something else is the responder right now and will not release it
+-- | - `onResponderRelease`
+-- |        Fired at the end of the touch, ie "touchUp"
+-- | - `onResponderTerminate`
+-- |        The responder has been taken from the View.
+-- |        Might be taken by other views after a call to onResponderTerminationRequest,
+-- |        or might be taken by the OS without asking (happens with control center/ notification center on iOS)
+-- | - `onResponderTerminationRequest`
+-- |        Something else wants to become responder.
+-- |        Should this view release the responder? Returning true allows release
+-- | - `onScroll`
+-- |        Fires at most once per frame during scrolling.
+-- |        The frequency of the events can be contolled using the scrollEventThrottle prop.
+-- | - `onScrollAnimationEnd`
+-- |        Called when a scrolling animation ends.
+-- | - `onScrollBeginDrag`
+-- |        Fires if a user initiates a scroll gesture.
+-- | - `onScrollEndDrag`
+-- |        Fires when a user has finished scrolling.
+-- | - `onScrollToIndexFailed`
+-- |        Used to handle failures when scrolling to an index that has not been measured yet.
+-- |        Recommended action is to either compute your own offset and `scrollTo` it, or scroll as far
+-- |        as possible and then try again after more items have been rendered.
+-- | - `onScrollToTop`
+-- |        Fires when the scroll view scrolls to top after the status bar has been tapped
+-- |         __*platform* ios__
+-- | - `onStartShouldSetResponder`
+-- |        A view can become the touch responder by implementing the correct negotiation methods.
+-- |        There are two methods to ask the view if it wants to become responder:
+-- |        Does this view want to become responder on the start of a touch?
+-- | - `onStartShouldSetResponderCapture`
+-- |        onStartShouldSetResponder and onMoveShouldSetResponder are called with a bubbling pattern,
+-- |        where the deepest node is called first.
+-- |        That means that the deepest component will become responder when multiple Views return true for *ShouldSetResponder handlers.
+-- |        This is desirable in most cases, because it makes sure all controls and buttons are usable.
+-- |        However, sometimes a parent will want to make sure that it becomes responder.
+-- |        This can be handled by using the capture phase.
+-- |        Before the responder system bubbles up from the deepest component,
+-- |        it will do a capture phase, firing on*ShouldSetResponderCapture.
+-- |        So if a parent View wants to prevent the child from becoming responder on a touch start,
+-- |        it should have a onStartShouldSetResponderCapture handler which returns true.
+-- | - `onViewableItemsChanged`
+-- |        Called when the viewability of rows changes, as defined by the
+-- |        `viewabilityConfig` prop.
+-- | - `overScrollMode`
+-- |        Used to override default value of overScroll mode.
+-- |           Possible values:
+-- |             - 'auto' - Default value, allow a user to over-scroll this view only if the content is large enough to meaningfully scroll.
+-- |             - 'always' - Always allow a user to over-scroll this view.
+-- |             - 'never' - Never allow a user to over-scroll this view.
+-- | - `pagingEnabled`
+-- |        When true the scroll view stops on multiples of the scroll view's size
+-- |        when scrolling. This can be used for horizontal pagination. The default
+-- |        value is false.
+-- | - `persistentScrollbar`
+-- |        Causes the scrollbars not to turn transparent when they are not in use. The default value is false.
+-- | - `pinchGestureEnabled`
+-- |        When true, ScrollView allows use of pinch gestures to zoom in and out.
+-- |        The default value is true.
+-- | - `pointerEvents`
+-- |        In the absence of auto property, none is much like CSS's none value. box-none is as if you had applied the CSS class:
+-- |        .box-none {
+-- |           pointer-events: none;
+-- |        }
+-- |        .box-none * {
+-- |           pointer-events: all;
+-- |        }
+-- |        box-only is the equivalent of
+-- |        .box-only {
+-- |           pointer-events: all;
+-- |        }
+-- |        .box-only * {
+-- |           pointer-events: none;
+-- |        }
+-- |        But since pointerEvents does not affect layout/appearance, and we are already deviating from the spec by adding additional modes,
+-- |        we opt to not include pointerEvents on style. On some platforms, we would need to implement it as a className anyways. Using style or not is an implementation detail of the platform.
+-- | - `progressViewOffset`
+-- |        Set this when offset is needed for the loading indicator to show correctly.
+-- |         __*platform* android__
+-- | - `refreshControl`
+-- |        A RefreshControl component, used to provide pull-to-refresh
+-- |        functionality for the ScrollView.
+-- | - `refreshing`
+-- |        Set this true while waiting for new data from a refresh.
+-- | - `removeClippedSubviews`
+-- |        Note: may have bugs (missing content) in some circumstances - use at your own risk.
+-- |        This may improve scroll performance for large lists.
+-- | - `renderItem`
+-- |        Default renderer for every item in every section. Can be over-ridden on a per-section basis.
+-- | - `renderScrollComponent`
+-- |        Render a custom scroll component, e.g. with a differently styled `RefreshControl`.
+-- | - `renderSectionFooter`
+-- |        Rendered at the bottom of each section.
+-- | - `renderSectionHeader`
+-- |        Rendered at the top of each section. Sticky headers are not yet supported.
+-- | - `renderToHardwareTextureAndroid`
+-- |        Whether this view should render itself (and all of its children) into a single hardware texture on the GPU.
+-- |        On Android, this is useful for animations and interactions that only modify opacity, rotation, translation, and/or scale:
+-- |        in those cases, the view doesn't have to be redrawn and display lists don't need to be re-executed. The texture can just be
+-- |        re-used and re-composited with different parameters. The downside is that this can use up limited video memory, so this prop should be set back to false at the end of the interaction/animation.
+-- | - `scrollEnabled`
+-- |        When false, the content does not scroll. The default value is true
+-- | - `scrollEventThrottle`
+-- |        This controls how often the scroll event will be fired while scrolling (in events per seconds).
+-- |        A higher number yields better accuracy for code that is tracking the scroll position,
+-- |        but can lead to scroll performance problems due to the volume of information being send over the bridge.
+-- |        The default value is zero, which means the scroll event will be sent only once each time the view is scrolled.
+-- | - `scrollIndicatorInsets`
+-- |        The amount by which the scroll view indicators are inset from the edges of the scroll view.
+-- |        This should normally be set to the same value as the contentInset.
+-- |        Defaults to {0, 0, 0, 0}.
+-- | - `scrollPerfTag`
+-- |        Tag used to log scroll performance on this scroll view. Will force
+-- |        momentum events to be turned on (see sendMomentumEvents). This doesn't do
+-- |        anything out of the box and you need to implement a custom native
+-- |        FpsListener for it to be useful.
+-- |         __*platform* android__
+-- | - `scrollToOverflowEnabled`
+-- |        When true, the scroll view can be programmatically scrolled beyond its
+-- |        content size. The default value is false.
+-- |         __*platform* ios__
+-- | - `scrollsToTop`
+-- |        When true the scroll view scrolls to top when the status bar is tapped.
+-- |        The default value is true.
+-- | - `sections`
+-- |        An array of objects with data for each section.
+-- | - `shouldRasterizeIOS`
+-- |        Whether this view should be rendered as a bitmap before compositing.
+-- |        On iOS, this is useful for animations and interactions that do not modify this component's dimensions nor its children;
+-- |        for example, when translating the position of a static view, rasterization allows the renderer to reuse a cached bitmap of a static view
+-- |        and quickly composite it during each frame.
+-- |        Rasterization incurs an off-screen drawing pass and the bitmap consumes memory.
+-- |        Test and measure when using this property.
+-- | - `showsHorizontalScrollIndicator`
+-- |        When true, shows a horizontal scroll indicator.
+-- | - `showsVerticalScrollIndicator`
+-- |        When true, shows a vertical scroll indicator.
+-- | - `snapToAlignment`
+-- |        When `snapToInterval` is set, `snapToAlignment` will define the relationship of the the snapping to the scroll view.
+-- |              - `start` (the default) will align the snap at the left (horizontal) or top (vertical)
+-- |              - `center` will align the snap in the center
+-- |              - `end` will align the snap at the right (horizontal) or bottom (vertical)
+-- | - `snapToEnd`
+-- |        Use in conjunction with `snapToOffsets`. By default, the end of the list counts as a snap
+-- |        offset. Set `snapToEnd` to false to disable this behavior and allow the list to scroll freely
+-- |        between its end and the last `snapToOffsets` offset. The default value is true.
+-- | - `snapToInterval`
+-- |        When set, causes the scroll view to stop at multiples of the value of `snapToInterval`.
+-- |        This can be used for paginating through children that have lengths smaller than the scroll view.
+-- |        Used in combination with `snapToAlignment` and `decelerationRate="fast"`. Overrides less
+-- |        configurable `pagingEnabled` prop.
+-- | - `snapToOffsets`
+-- |        When set, causes the scroll view to stop at the defined offsets. This can be used for
+-- |        paginating through variously sized children that have lengths smaller than the scroll view.
+-- |        Typically used in combination with `decelerationRate="fast"`. Overrides less configurable
+-- |        `pagingEnabled` and `snapToInterval` props.
+-- | - `snapToStart`
+-- |        Use in conjunction with `snapToOffsets`. By default, the beginning of the list counts as a
+-- |        snap offset. Set `snapToStart` to false to disable this behavior and allow the list to scroll
+-- |        freely between its start and the first `snapToOffsets` offset. The default value is true.
+-- | - `stickyHeaderIndices`
+-- |        An array of child indices determining which children get docked to the
+-- |        top of the screen when scrolling. For example passing
+-- |        `stickyHeaderIndices={[0]}` will cause the first child to be fixed to the
+-- |        top of the scroll view. This property is not supported in conjunction
+-- |        with `horizontal={true}`.
+-- | - `stickySectionHeadersEnabled`
+-- |        Makes section headers stick to the top of the screen until the next one pushes it off.
+-- |        Only enabled by default on iOS because that is the platform standard there.
+-- | - `style`
+-- |        Style
+-- | - `testID`
+-- |        Used to locate this view in end-to-end tests.
+-- | - `tvParallaxMagnification`
+-- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 1.0.
+-- |         __*platform* ios__
+-- | - `tvParallaxProperties`
+-- |        *(Apple TV only)* Object with properties to control Apple TV parallax effects.
+-- |         __*platform* ios__
+-- | - `tvParallaxShiftDistanceX`
+-- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 2.0.
+-- |         __*platform* ios__
+-- | - `tvParallaxShiftDistanceY`
+-- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 2.0.
+-- |         __*platform* ios__
+-- | - `tvParallaxTiltAngle`
+-- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 0.05.
+-- |         __*platform* ios__
+-- | - `updateCellsBatchingPeriod`
+-- |        Amount of time between low-pri item render batches, e.g. for rendering items quite a ways off
+-- |        screen. Similar fill rate/responsiveness tradeoff as `maxToRenderPerBatch`.
+-- | - `windowSize`
+-- |        Determines the maximum number of items rendered outside of the visible area, in units of
+-- |        visible lengths. So if your list fills the screen, then `windowSize={21}` (the default) will
+-- |        render the visible screen area plus up to 10 screens above and 10 below the viewport. Reducing
+-- |        this number will reduce memory consumption and may improve performance, but will increase the
+-- |        chance that fast scrolling may reveal momentary blank areas of unrendered content.
+-- | - `zoomScale`
+-- |        The current scale of the scroll view content. The default value is 1.0.
+
+type SectionListProps_optional itemT sectionT = 
+  ( "CellRendererComponent" :: JSX
+  ,  "ItemSeparatorComponent" :: JSX
+  ,  "ListEmptyComponent" :: JSX
+  ,  "ListFooterComponent" :: JSX
+  ,  "ListHeaderComponent" :: JSX
+  ,  "SectionSeparatorComponent" :: JSX
+  ,  accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
+  ,  accessibilityElementsHidden :: Boolean
+  ,  accessibilityHint :: String
+  ,  accessibilityIgnoresInvertColors :: Boolean
+  ,  accessibilityLabel :: String
+  ,  accessibilityLiveRegion :: String
+  ,  accessibilityRole :: String
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
+  ,  accessibilityViewIsModal :: Boolean
+  ,  accessible :: Boolean
+  ,  alwaysBounceHorizontal :: Boolean
+  ,  alwaysBounceVertical :: Boolean
+  ,  automaticallyAdjustContentInsets :: Boolean
+  ,  bounces :: Boolean
+  ,  bouncesZoom :: Boolean
+  ,  canCancelContentTouches :: Boolean
+  ,  centerContent :: Boolean
+  ,  collapsable :: Boolean
+  ,  contentContainerStyle :: CSS
+  ,  contentInset :: Insets
+  ,  contentInsetAdjustmentBehavior :: String
+  ,  contentOffset :: PointPropType
+  ,  data :: Foreign
+  ,  debug :: Boolean
+  ,  decelerationRate :: String
+  ,  directionalLockEnabled :: Boolean
+  ,  disableIntervalMomentum :: Boolean
+  ,  disableScrollViewPanResponder :: Boolean
+  ,  disableVirtualization :: Boolean
+  ,  endFillColor :: ScrollViewPropsAndroidEndFillColor
+  ,  extraData :: Foreign
+  ,  fadingEdgeLength :: Number
+  ,  focusable :: Boolean
+  ,  getItem :: (EffectFn2 Foreign Number itemT)
+  ,  getItemCount :: (EffectFn1 Foreign Number)
+  ,  getItemLayout :: (EffectFn2 (Array (SectionBase itemT sectionT)) Number { length :: Number, offset :: Number, index :: Number })
+  ,  hasTVPreferredFocus :: Boolean
+  ,  hitSlop :: Insets
+  ,  horizontal :: String
+  ,  importantForAccessibility :: String
+  ,  indicatorStyle :: String
+  ,  initialNumToRender :: Number
+  ,  initialScrollIndex :: String
+  ,  invertStickyHeaders :: Boolean
+  ,  inverted :: String
+  ,  isTVSelectable :: Boolean
+  ,  keyExtractor :: (EffectFn2 itemT Number String)
+  ,  keyboardDismissMode :: String
+  ,  keyboardShouldPersistTaps :: String
+  ,  legacyImplementation :: Boolean
+  ,  listKey :: String
+  ,  maintainVisibleContentPosition :: { autoscrollToTopThreshold :: String, minIndexForVisible :: Number }
+  ,  maxToRenderPerBatch :: Number
+  ,  maximumZoomScale :: Number
+  ,  minimumZoomScale :: Number
+  ,  nativeID :: String
+  ,  needsOffscreenAlphaCompositing :: Boolean
+  ,  nestedScrollEnabled :: Boolean
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
+  ,  onAccessibilityTap :: (Effect Unit)
+  ,  onContentSizeChange :: (EffectFn2 Number Number Unit)
+  ,  onEndReached :: ((EffectFn1 { distanceFromEnd :: Number } Unit))
+  ,  onEndReachedThreshold :: String
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
+  ,  onMagicTap :: (Effect Unit)
+  ,  onMomentumScrollBegin :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
+  ,  onMomentumScrollEnd :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
+  ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
+  ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
+  ,  onRefresh :: ((Effect Unit))
+  ,  onResponderEnd :: (EffectFn1 GestureResponderEvent Unit)
+  ,  onResponderGrant :: (EffectFn1 GestureResponderEvent Unit)
+  ,  onResponderMove :: (EffectFn1 GestureResponderEvent Unit)
+  ,  onResponderReject :: (EffectFn1 GestureResponderEvent Unit)
+  ,  onResponderRelease :: (EffectFn1 GestureResponderEvent Unit)
+  ,  onResponderStart :: (EffectFn1 GestureResponderEvent Unit)
+  ,  onResponderTerminate :: (EffectFn1 GestureResponderEvent Unit)
+  ,  onResponderTerminationRequest :: (EffectFn1 GestureResponderEvent Boolean)
+  ,  onScroll :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
+  ,  onScrollAnimationEnd :: (Effect Unit)
+  ,  onScrollBeginDrag :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
+  ,  onScrollEndDrag :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
+  ,  onScrollToIndexFailed :: (EffectFn1 { index :: Number, highestMeasuredFrameIndex :: Number, averageItemLength :: Number } Unit)
+  ,  onScrollToTop :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
+  ,  onStartShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
+  ,  onStartShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
+  ,  onTouchCancel :: (EffectFn1 GestureResponderEvent Unit)
+  ,  onTouchEnd :: (EffectFn1 GestureResponderEvent Unit)
+  ,  onTouchEndCapture :: (EffectFn1 GestureResponderEvent Unit)
+  ,  onTouchMove :: (EffectFn1 GestureResponderEvent Unit)
+  ,  onTouchStart :: (EffectFn1 GestureResponderEvent Unit)
+  ,  onViewableItemsChanged :: ((EffectFn1 { viewableItems :: (Array ViewToken), changed :: (Array ViewToken) } Unit))
+  ,  overScrollMode :: String
+  ,  pagingEnabled :: Boolean
+  ,  persistentScrollbar :: Boolean
+  ,  pinchGestureEnabled :: Boolean
+  ,  pointerEvents :: String
+  ,  progressViewOffset :: Number
+  ,  refreshControl :: JSX
+  ,  refreshing :: String
+  ,  removeClippedSubviews :: Boolean
+  ,  renderItem :: (EffectFn1 (SectionListRenderItemInfo itemT sectionT) JSX)
+  ,  renderScrollComponent :: (EffectFn1 (Record ScrollViewProps) JSX)
+  ,  renderSectionFooter :: (EffectFn1 { section :: (SectionBase itemT sectionT) } JSX)
+  ,  renderSectionHeader :: (EffectFn1 { section :: (SectionBase itemT sectionT) } JSX)
+  ,  renderToHardwareTextureAndroid :: Boolean
+  ,  scrollEnabled :: Boolean
+  ,  scrollEventThrottle :: Number
+  ,  scrollIndicatorInsets :: Insets
+  ,  scrollPerfTag :: String
+  ,  scrollToOverflowEnabled :: Boolean
+  ,  scrollsToTop :: Boolean
+  ,  shouldRasterizeIOS :: Boolean
+  ,  showsHorizontalScrollIndicator :: Boolean
+  ,  showsVerticalScrollIndicator :: Boolean
+  ,  snapToAlignment :: String
+  ,  snapToEnd :: Boolean
+  ,  snapToInterval :: Number
+  ,  snapToOffsets :: (Array Number)
+  ,  snapToStart :: Boolean
+  ,  stickyHeaderIndices :: (Array Number)
+  ,  stickySectionHeadersEnabled :: Boolean
+  ,  style :: CSS
+  ,  testID :: String
+  ,  tvParallaxMagnification :: Number
+  ,  tvParallaxProperties :: { enabled :: Boolean, shiftDistanceX :: Number, shiftDistanceY :: Number, tiltAngle :: Number, magnification :: Number, pressMagnification :: Number, pressDuration :: Number, pressDelay :: Number }
+  ,  tvParallaxShiftDistanceX :: Number
+  ,  tvParallaxShiftDistanceY :: Number
+  ,  tvParallaxTiltAngle :: Number
+  ,  updateCellsBatchingPeriod :: Number
+  ,  viewabilityConfig :: ViewabilityConfig
+  ,  viewabilityConfigCallbackPairs :: (Array ViewabilityConfigCallbackPair)
+  ,  windowSize :: Number
+  ,  zoomScale :: Number
+  ,  key :: String
+  ,  children :: Array JSX
+  )
+
+
+-- | - `ItemSeparatorComponent`
+-- |        Rendered in between adjacent Items within each section.
+-- | - `ListEmptyComponent`
+-- |        Rendered when the list is empty.
+-- | - `ListFooterComponent`
+-- |        Rendered at the very end of the list.
+-- | - `ListHeaderComponent`
+-- |        Rendered at the very beginning of the list.
+-- | - `SectionSeparatorComponent`
+-- |        Rendered in between each section.
+-- | - `accessibilityActions`
+-- |        Provides an array of custom actions available for accessibility.
+-- | - `accessibilityElementsHidden`
+-- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
+-- |        are hidden to the screen reader.
+-- |         __*platform* ios__
+-- | - `accessibilityHint`
+-- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
+-- | - `accessibilityIgnoresInvertColors`
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |         __*platform* ios__
+-- | - `accessibilityLabel`
+-- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
+-- |        label is constructed by traversing all the children and accumulating all the Text nodes separated by space.
+-- | - `accessibilityLiveRegion`
+-- |        Indicates to accessibility services whether the user should be notified when this view changes.
+-- |        Works for Android API >= 19 only.
+-- |        See http://developer.android.com/reference/android/view/View.html#attr_android:accessibilityLiveRegion for references.
+-- |         __*platform* android__
+-- | - `accessibilityRole`
+-- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
+-- | - `accessibilityState`
+-- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
+-- | - `accessibilityViewIsModal`
+-- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
+-- |         __*platform* ios__
+-- | - `accessible`
+-- |        When true, indicates that the view is an accessibility element.
+-- |        By default, all the touchable elements are accessible.
+-- | - `alwaysBounceHorizontal`
+-- |        When true the scroll view bounces horizontally when it reaches the end
+-- |        even if the content is smaller than the scroll view itself. The default
+-- |        value is true when `horizontal={true}` and false otherwise.
+-- | - `alwaysBounceVertical`
+-- |        When true the scroll view bounces vertically when it reaches the end
+-- |        even if the content is smaller than the scroll view itself. The default
+-- |        value is false when `horizontal={true}` and true otherwise.
+-- | - `automaticallyAdjustContentInsets`
+-- |        Controls whether iOS should automatically adjust the content inset for scroll views that are placed behind a navigation bar or tab bar/ toolbar.
+-- |        The default value is true.
+-- | - `bounces`
+-- |        When true the scroll view bounces when it reaches the end of the
+-- |        content if the content is larger then the scroll view along the axis of
+-- |        the scroll direction. When false it disables all bouncing even if
+-- |        the `alwaysBounce*` props are true. The default value is true.
+-- | - `bouncesZoom`
+-- |        When true gestures can drive zoom past min/max and the zoom will animate
+-- |        to the min/max value at gesture end otherwise the zoom will not exceed
+-- |        the limits.
+-- | - `canCancelContentTouches`
+-- |        When false once tracking starts won't try to drag if the touch moves.
+-- |        The default value is true.
+-- | - `centerContent`
+-- |        When true the scroll view automatically centers the content when the
+-- |        content is smaller than the scroll view bounds; when the content is
+-- |        larger than the scroll view this property has no effect. The default
+-- |        value is false.
+-- | - `collapsable`
+-- |        Views that are only used to layout their children or otherwise don't draw anything
+-- |        may be automatically removed from the native hierarchy as an optimization.
+-- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+-- | - `contentContainerStyle`
+-- |        These styles will be applied to the scroll view content container which
+-- |        wraps all of the child views. Example:
+-- |           return (
+-- |             <ScrollView contentContainerStyle={styles.contentContainer}>
+-- |             </ScrollView>
+-- |           );
+-- |           ...
+-- |           const styles = StyleSheet.create({
+-- |             contentContainer: {
+-- |               paddingVertical: 20
+-- |             }
+-- |           });
+-- | - `contentInset`
+-- |        The amount by which the scroll view content is inset from the edges of the scroll view.
+-- |        Defaults to {0, 0, 0, 0}.
+-- | - `contentInsetAdjustmentBehavior`
+-- |        This property specifies how the safe area insets are used to modify the content area of the scroll view.
+-- |        The default value of this property must be 'automatic'. But the default value is 'never' until RN@0.51.
+-- | - `contentOffset`
+-- |        Used to manually set the starting scroll offset.
+-- |        The default value is {x: 0, y: 0}
+-- | - `data`
+-- |        The default accessor functions assume this is an Array<{key: string}> but you can override
+-- |        getItem, getItemCount, and keyExtractor to handle any type of index-based data.
+-- | - `debug`
+-- |        `debug` will turn on extra logging and visual overlays to aid with debugging both usage and
+-- |        implementation, but with a significant perf hit.
+-- | - `decelerationRate`
+-- |        A floating-point number that determines how quickly the scroll view
+-- |        decelerates after the user lifts their finger. You may also use string
+-- |        shortcuts `"normal"` and `"fast"` which match the underlying iOS settings
+-- |        for `UIScrollViewDecelerationRateNormal` and
+-- |        `UIScrollViewDecelerationRateFast` respectively.
+-- |          - `'normal'`: 0.998 on iOS, 0.985 on Android (the default)
+-- |          - `'fast'`: 0.99 on iOS, 0.9 on Android
+-- | - `directionalLockEnabled`
+-- |        When true the ScrollView will try to lock to only vertical or horizontal
+-- |        scrolling while dragging.  The default value is false.
+-- | - `disableIntervalMomentum`
+-- |        When true, the scroll view stops on the next index (in relation to scroll position at release)
+-- |        regardless of how fast the gesture is. This can be used for horizontal pagination when the page
+-- |        is less than the width of the ScrollView. The default value is false.
+-- | - `disableScrollViewPanResponder`
+-- |        When true, the default JS pan responder on the ScrollView is disabled, and full control over
+-- |        touches inside the ScrollView is left to its child components. This is particularly useful
+-- |        if `snapToInterval` is enabled, since it does not follow typical touch patterns. Do not use
+-- |        this on regular ScrollView use cases without `snapToInterval` as it may cause unexpected
+-- |        touches to occur while scrolling. The default value is false.
+-- | - `disableVirtualization`
+-- |        DEPRECATED: Virtualization provides significant performance and memory optimizations, but fully
+-- |        unmounts react instances that are outside of the render window. You should only need to disable
+-- |        this for debugging purposes.
+-- | - `endFillColor`
+-- |        Sometimes a scrollview takes up more space than its content fills.
+-- |        When this is the case, this prop will fill the rest of the
+-- |        scrollview with a color to avoid setting a background and creating
+-- |        unnecessary overdraw. This is an advanced optimization that is not
+-- |        needed in the general case.
+-- | - `extraData`
+-- |        A marker property for telling the list to re-render (since it implements PureComponent).
+-- |        If any of your `renderItem`, Header, Footer, etc. functions depend on anything outside of the `data` prop,
+-- |        stick it here and treat it immutably.
+-- | - `fadingEdgeLength`
+-- |        Fades out the edges of the the scroll content.
+-- |        If the value is greater than 0, the fading edges will be set accordingly
+-- |        to the current scroll direction and position,
+-- |        indicating if there is more content to show.
+-- |        The default value is 0.
+-- |         __*platform* android__
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
+-- | - `getItem`
+-- |        A generic accessor for extracting an item from any sort of data blob.
+-- | - `getItemCount`
+-- |        Determines how many items are in the data blob.
+-- | - `getItemLayout`
+-- |        `getItemLayout` is an optional optimization that lets us skip measurement of dynamic
+-- |        content if you know the height of items a priori. getItemLayout is the most efficient,
+-- |        and is easy to use if you have fixed height items, for example:
+-- |        ```
+-- |        getItemLayout={(data, index) => (
+-- |           {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
+-- |        )}
+-- |        ```
+-- | - `hasTVPreferredFocus`
+-- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
+-- |         __*platform* ios__
+-- | - `hitSlop`
+-- |        This defines how far a touch event can start away from the view.
+-- |        Typical interface guidelines recommend touch targets that are at least
+-- |        30 - 40 points/density-independent pixels. If a Touchable view has
+-- |        a height of 20 the touchable height can be extended to 40 with
+-- |        hitSlop={{top: 10, bottom: 10, left: 0, right: 0}}
+-- |        NOTE The touch area never extends past the parent view bounds and
+-- |        the Z-index of sibling views always takes precedence if a touch
+-- |        hits two overlapping views.
+-- | - `importantForAccessibility`
+-- |        Controls how view is important for accessibility which is if it fires accessibility events
+-- |        and if it is reported to accessibility services that query the screen.
+-- |        Works for Android only. See http://developer.android.com/reference/android/R.attr.html#importantForAccessibility for references.
+-- |        Possible values:
+-- |              'auto' - The system determines whether the view is important for accessibility - default (recommended).
+-- |              'yes' - The view is important for accessibility.
+-- |              'no' - The view is not important for accessibility.
+-- |              'no-hide-descendants' - The view is not important for accessibility, nor are any of its descendant views.
+-- | - `indicatorStyle`
+-- |        The style of the scroll indicators.
+-- |        - default (the default), same as black.
+-- |        - black, scroll indicator is black. This style is good against
+-- |           a white content background.
+-- |        - white, scroll indicator is white. This style is good against
+-- |           a black content background.
+-- | - `initialNumToRender`
+-- |        How many items to render in the initial batch
+-- | - `initialScrollIndex`
+-- |        Instead of starting at the top with the first item, start at `initialScrollIndex`. This
+-- |        disables the "scroll to top" optimization that keeps the first `initialNumToRender` items
+-- |        always rendered and immediately renders the items starting at this initial index. Requires
+-- |        `getItemLayout` to be implemented.
+-- | - `invertStickyHeaders`
+-- |        If sticky headers should stick at the bottom instead of the top of the
+-- |        ScrollView. This is usually used with inverted ScrollViews.
+-- | - `inverted`
+-- |        Reverses the direction of scroll. Uses scale transforms of -1.
+-- | - `isTVSelectable`
+-- |        *(Apple TV only)* When set to true, this view will be focusable
+-- |        and navigable using the Apple TV remote.
+-- |         __*platform* ios__
+-- | - `keyExtractor`
+-- |        Used to extract a unique key for a given item at the specified index. Key is used for caching
+-- |        and as the react key to track item re-ordering. The default extractor checks `item.key`, then
+-- |        falls back to using the index, like React does.
+-- | - `keyboardDismissMode`
+-- |        Determines whether the keyboard gets dismissed in response to a drag.
+-- |           - 'none' (the default) drags do not dismiss the keyboard.
+-- |           - 'onDrag' the keyboard is dismissed when a drag begins.
+-- |           - 'interactive' the keyboard is dismissed interactively with the drag
+-- |             and moves in synchrony with the touch; dragging upwards cancels the
+-- |             dismissal.
+-- | - `keyboardShouldPersistTaps`
+-- |        Determines when the keyboard should stay visible after a tap.
+-- |        - 'never' (the default), tapping outside of the focused text input when the keyboard is up dismisses the keyboard. When this happens, children won't receive the tap.
+-- |        - 'always', the keyboard will not dismiss automatically, and the scroll view will not catch taps, but children of the scroll view can catch taps.
+-- |        - 'handled', the keyboard will not dismiss automatically when the tap was handled by a children, (or captured by an ancestor).
+-- |        - false, deprecated, use 'never' instead
+-- |        - true, deprecated, use 'always' instead
+-- | - `legacyImplementation`
+-- |        Uses legacy MetroListView instead of default VirtualizedSectionList
+-- | - `maintainVisibleContentPosition`
+-- |        When set, the scroll view will adjust the scroll position so that the first child
+-- |        that is currently visible and at or beyond minIndexForVisible will not change position.
+-- |        This is useful for lists that are loading content in both directions, e.g. a chat thread,
+-- |        where new messages coming in might otherwise cause the scroll position to jump. A value
+-- |        of 0 is common, but other values such as 1 can be used to skip loading spinners or other
+-- |        content that should not maintain position.
+-- |        The optional autoscrollToTopThreshold can be used to make the content automatically scroll
+-- |        to the top after making the adjustment if the user was within the threshold of the top
+-- |        before the adjustment was made. This is also useful for chat-like applications where you
+-- |        want to see new messages scroll into place, but not if the user has scrolled up a ways and
+-- |        it would be disruptive to scroll a bunch.
+-- |        Caveat 1: Reordering elements in the scrollview with this enabled will probably cause
+-- |        jumpiness and jank. It can be fixed, but there are currently no plans to do so. For now,
+-- |        don't re-order the content of any ScrollViews or Lists that use this feature.
+-- |        Caveat 2: This uses contentOffset and frame.origin in native code to compute visibility.
+-- |        Occlusion, transforms, and other complexity won't be taken into account as to whether
+-- |        content is "visible" or not.
+-- | - `maxToRenderPerBatch`
+-- |        The maximum number of items to render in each incremental render batch. The more rendered at
+-- |        once, the better the fill rate, but responsiveness my suffer because rendering content may
+-- |        interfere with responding to button taps or other interactions.
+-- | - `maximumZoomScale`
+-- |        The maximum allowed zoom scale. The default value is 1.0.
+-- | - `minimumZoomScale`
+-- |        The minimum allowed zoom scale. The default value is 1.0.
+-- | - `nativeID`
+-- |        Used to reference react managed views from native code.
+-- | - `needsOffscreenAlphaCompositing`
+-- |        Whether this view needs to rendered offscreen and composited with an alpha in order to preserve 100% correct colors and blending behavior.
+-- |        The default (false) falls back to drawing the component and its children
+-- |        with an alpha applied to the paint used to draw each element instead of rendering the full component offscreen and compositing it back with an alpha value.
+-- |        This default may be noticeable and undesired in the case where the View you are setting an opacity on
+-- |        has multiple overlapping elements (e.g. multiple overlapping Views, or text and a background).
+-- |        Rendering offscreen to preserve correct alpha behavior is extremely expensive
+-- |        and hard to debug for non-native developers, which is why it is not turned on by default.
+-- |        If you do need to enable this property for an animation,
+-- |        consider combining it with renderToHardwareTextureAndroid if the view contents are static (i.e. it doesn't need to be redrawn each frame).
+-- |        If that property is enabled, this View will be rendered off-screen once,
+-- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
+-- | - `nestedScrollEnabled`
+-- |        Enables nested scrolling for Android API level 21+. Nested scrolling is supported by default on iOS.
+-- | - `onAccessibilityAction`
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
+-- |         __*platform* ios__
+-- | - `onAccessibilityTap`
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
+-- |         __*platform* ios__
+-- | - `onContentSizeChange`
+-- |        Called when scrollable content view of the ScrollView changes.
+-- |        Handler function is passed the content width and content height as parameters: (contentWidth, contentHeight)
+-- |        It's implemented using onLayout handler attached to the content container which this ScrollView renders.
+-- | - `onEndReached`
+-- |        Called once when the scroll position gets within onEndReachedThreshold of the rendered content.
+-- | - `onEndReachedThreshold`
+-- |        How far from the end (in units of visible length of the list) the bottom edge of the
+-- |        list must be from the end of the content to trigger the `onEndReached` callback.
+-- |        Thus a value of 0.5 will trigger `onEndReached` when the end of the content is
+-- |        within half the visible length of the list.
+-- | - `onMagicTap`
+-- |        When accessible is true, the system will invoke this function when the user performs the magic tap gesture.
+-- |         __*platform* ios__
+-- | - `onMomentumScrollBegin`
+-- |        Fires when scroll view has begun moving
+-- | - `onMomentumScrollEnd`
+-- |        Fires when scroll view has finished moving
+-- | - `onMoveShouldSetResponder`
+-- |        Called for every touch move on the View when it is not the responder: does this view want to "claim" touch responsiveness?
+-- | - `onMoveShouldSetResponderCapture`
+-- |        onStartShouldSetResponder and onMoveShouldSetResponder are called with a bubbling pattern,
+-- |        where the deepest node is called first.
+-- |        That means that the deepest component will become responder when multiple Views return true for *ShouldSetResponder handlers.
+-- |        This is desirable in most cases, because it makes sure all controls and buttons are usable.
+-- |        However, sometimes a parent will want to make sure that it becomes responder.
+-- |        This can be handled by using the capture phase.
+-- |        Before the responder system bubbles up from the deepest component,
+-- |        it will do a capture phase, firing on*ShouldSetResponderCapture.
+-- |        So if a parent View wants to prevent the child from becoming responder on a touch start,
+-- |        it should have a onStartShouldSetResponderCapture handler which returns true.
+-- | - `onRefresh`
+-- |        If provided, a standard RefreshControl will be added for "Pull to Refresh" functionality.
+-- |        Make sure to also set the refreshing prop correctly.
+-- | - `onResponderEnd`
+-- |        If the View returns true and attempts to become the responder, one of the following will happen:
+-- | - `onResponderGrant`
+-- |        The View is now responding for touch events.
+-- |        This is the time to highlight and show the user what is happening
+-- | - `onResponderMove`
+-- |        If the view is responding, the following handlers can be called:
+-- |        The user is moving their finger
+-- | - `onResponderReject`
+-- |        Something else is the responder right now and will not release it
+-- | - `onResponderRelease`
+-- |        Fired at the end of the touch, ie "touchUp"
+-- | - `onResponderTerminate`
+-- |        The responder has been taken from the View.
+-- |        Might be taken by other views after a call to onResponderTerminationRequest,
+-- |        or might be taken by the OS without asking (happens with control center/ notification center on iOS)
+-- | - `onResponderTerminationRequest`
+-- |        Something else wants to become responder.
+-- |        Should this view release the responder? Returning true allows release
+-- | - `onScroll`
+-- |        Fires at most once per frame during scrolling.
+-- |        The frequency of the events can be contolled using the scrollEventThrottle prop.
+-- | - `onScrollAnimationEnd`
+-- |        Called when a scrolling animation ends.
+-- | - `onScrollBeginDrag`
+-- |        Fires if a user initiates a scroll gesture.
+-- | - `onScrollEndDrag`
+-- |        Fires when a user has finished scrolling.
+-- | - `onScrollToIndexFailed`
+-- |        Used to handle failures when scrolling to an index that has not been measured yet.
+-- |        Recommended action is to either compute your own offset and `scrollTo` it, or scroll as far
+-- |        as possible and then try again after more items have been rendered.
+-- | - `onScrollToTop`
+-- |        Fires when the scroll view scrolls to top after the status bar has been tapped
+-- |         __*platform* ios__
+-- | - `onStartShouldSetResponder`
+-- |        A view can become the touch responder by implementing the correct negotiation methods.
+-- |        There are two methods to ask the view if it wants to become responder:
+-- |        Does this view want to become responder on the start of a touch?
+-- | - `onStartShouldSetResponderCapture`
+-- |        onStartShouldSetResponder and onMoveShouldSetResponder are called with a bubbling pattern,
+-- |        where the deepest node is called first.
+-- |        That means that the deepest component will become responder when multiple Views return true for *ShouldSetResponder handlers.
+-- |        This is desirable in most cases, because it makes sure all controls and buttons are usable.
+-- |        However, sometimes a parent will want to make sure that it becomes responder.
+-- |        This can be handled by using the capture phase.
+-- |        Before the responder system bubbles up from the deepest component,
+-- |        it will do a capture phase, firing on*ShouldSetResponderCapture.
+-- |        So if a parent View wants to prevent the child from becoming responder on a touch start,
+-- |        it should have a onStartShouldSetResponderCapture handler which returns true.
+-- | - `onViewableItemsChanged`
+-- |        Called when the viewability of rows changes, as defined by the
+-- |        `viewabilityConfig` prop.
+-- | - `overScrollMode`
+-- |        Used to override default value of overScroll mode.
+-- |           Possible values:
+-- |             - 'auto' - Default value, allow a user to over-scroll this view only if the content is large enough to meaningfully scroll.
+-- |             - 'always' - Always allow a user to over-scroll this view.
+-- |             - 'never' - Never allow a user to over-scroll this view.
+-- | - `pagingEnabled`
+-- |        When true the scroll view stops on multiples of the scroll view's size
+-- |        when scrolling. This can be used for horizontal pagination. The default
+-- |        value is false.
+-- | - `persistentScrollbar`
+-- |        Causes the scrollbars not to turn transparent when they are not in use. The default value is false.
+-- | - `pinchGestureEnabled`
+-- |        When true, ScrollView allows use of pinch gestures to zoom in and out.
+-- |        The default value is true.
+-- | - `pointerEvents`
+-- |        In the absence of auto property, none is much like CSS's none value. box-none is as if you had applied the CSS class:
+-- |        .box-none {
+-- |           pointer-events: none;
+-- |        }
+-- |        .box-none * {
+-- |           pointer-events: all;
+-- |        }
+-- |        box-only is the equivalent of
+-- |        .box-only {
+-- |           pointer-events: all;
+-- |        }
+-- |        .box-only * {
+-- |           pointer-events: none;
+-- |        }
+-- |        But since pointerEvents does not affect layout/appearance, and we are already deviating from the spec by adding additional modes,
+-- |        we opt to not include pointerEvents on style. On some platforms, we would need to implement it as a className anyways. Using style or not is an implementation detail of the platform.
+-- | - `progressViewOffset`
+-- |        Set this when offset is needed for the loading indicator to show correctly.
+-- |         __*platform* android__
+-- | - `refreshControl`
+-- |        A RefreshControl component, used to provide pull-to-refresh
+-- |        functionality for the ScrollView.
+-- | - `refreshing`
+-- |        Set this true while waiting for new data from a refresh.
+-- | - `removeClippedSubviews`
+-- |        Note: may have bugs (missing content) in some circumstances - use at your own risk.
+-- |        This may improve scroll performance for large lists.
+-- | - `renderItem`
+-- |        Default renderer for every item in every section. Can be over-ridden on a per-section basis.
+-- | - `renderScrollComponent`
+-- |        Render a custom scroll component, e.g. with a differently styled `RefreshControl`.
+-- | - `renderSectionFooter`
+-- |        Rendered at the bottom of each section.
+-- | - `renderSectionHeader`
+-- |        Rendered at the top of each section. Sticky headers are not yet supported.
+-- | - `renderToHardwareTextureAndroid`
+-- |        Whether this view should render itself (and all of its children) into a single hardware texture on the GPU.
+-- |        On Android, this is useful for animations and interactions that only modify opacity, rotation, translation, and/or scale:
+-- |        in those cases, the view doesn't have to be redrawn and display lists don't need to be re-executed. The texture can just be
+-- |        re-used and re-composited with different parameters. The downside is that this can use up limited video memory, so this prop should be set back to false at the end of the interaction/animation.
+-- | - `scrollEnabled`
+-- |        When false, the content does not scroll. The default value is true
+-- | - `scrollEventThrottle`
+-- |        This controls how often the scroll event will be fired while scrolling (in events per seconds).
+-- |        A higher number yields better accuracy for code that is tracking the scroll position,
+-- |        but can lead to scroll performance problems due to the volume of information being send over the bridge.
+-- |        The default value is zero, which means the scroll event will be sent only once each time the view is scrolled.
+-- | - `scrollIndicatorInsets`
+-- |        The amount by which the scroll view indicators are inset from the edges of the scroll view.
+-- |        This should normally be set to the same value as the contentInset.
+-- |        Defaults to {0, 0, 0, 0}.
+-- | - `scrollPerfTag`
+-- |        Tag used to log scroll performance on this scroll view. Will force
+-- |        momentum events to be turned on (see sendMomentumEvents). This doesn't do
+-- |        anything out of the box and you need to implement a custom native
+-- |        FpsListener for it to be useful.
+-- |         __*platform* android__
+-- | - `scrollToOverflowEnabled`
+-- |        When true, the scroll view can be programmatically scrolled beyond its
+-- |        content size. The default value is false.
+-- |         __*platform* ios__
+-- | - `scrollsToTop`
+-- |        When true the scroll view scrolls to top when the status bar is tapped.
+-- |        The default value is true.
+-- | - `sections`
+-- |        An array of objects with data for each section.
+-- | - `shouldRasterizeIOS`
+-- |        Whether this view should be rendered as a bitmap before compositing.
+-- |        On iOS, this is useful for animations and interactions that do not modify this component's dimensions nor its children;
+-- |        for example, when translating the position of a static view, rasterization allows the renderer to reuse a cached bitmap of a static view
+-- |        and quickly composite it during each frame.
+-- |        Rasterization incurs an off-screen drawing pass and the bitmap consumes memory.
+-- |        Test and measure when using this property.
+-- | - `showsHorizontalScrollIndicator`
+-- |        When true, shows a horizontal scroll indicator.
+-- | - `showsVerticalScrollIndicator`
+-- |        When true, shows a vertical scroll indicator.
+-- | - `snapToAlignment`
+-- |        When `snapToInterval` is set, `snapToAlignment` will define the relationship of the the snapping to the scroll view.
+-- |              - `start` (the default) will align the snap at the left (horizontal) or top (vertical)
+-- |              - `center` will align the snap in the center
+-- |              - `end` will align the snap at the right (horizontal) or bottom (vertical)
+-- | - `snapToEnd`
+-- |        Use in conjunction with `snapToOffsets`. By default, the end of the list counts as a snap
+-- |        offset. Set `snapToEnd` to false to disable this behavior and allow the list to scroll freely
+-- |        between its end and the last `snapToOffsets` offset. The default value is true.
+-- | - `snapToInterval`
+-- |        When set, causes the scroll view to stop at multiples of the value of `snapToInterval`.
+-- |        This can be used for paginating through children that have lengths smaller than the scroll view.
+-- |        Used in combination with `snapToAlignment` and `decelerationRate="fast"`. Overrides less
+-- |        configurable `pagingEnabled` prop.
+-- | - `snapToOffsets`
+-- |        When set, causes the scroll view to stop at the defined offsets. This can be used for
+-- |        paginating through variously sized children that have lengths smaller than the scroll view.
+-- |        Typically used in combination with `decelerationRate="fast"`. Overrides less configurable
+-- |        `pagingEnabled` and `snapToInterval` props.
+-- | - `snapToStart`
+-- |        Use in conjunction with `snapToOffsets`. By default, the beginning of the list counts as a
+-- |        snap offset. Set `snapToStart` to false to disable this behavior and allow the list to scroll
+-- |        freely between its start and the first `snapToOffsets` offset. The default value is true.
+-- | - `stickyHeaderIndices`
+-- |        An array of child indices determining which children get docked to the
+-- |        top of the screen when scrolling. For example passing
+-- |        `stickyHeaderIndices={[0]}` will cause the first child to be fixed to the
+-- |        top of the scroll view. This property is not supported in conjunction
+-- |        with `horizontal={true}`.
+-- | - `stickySectionHeadersEnabled`
+-- |        Makes section headers stick to the top of the screen until the next one pushes it off.
+-- |        Only enabled by default on iOS because that is the platform standard there.
+-- | - `style`
+-- |        Style
+-- | - `testID`
+-- |        Used to locate this view in end-to-end tests.
+-- | - `tvParallaxMagnification`
+-- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 1.0.
+-- |         __*platform* ios__
+-- | - `tvParallaxProperties`
+-- |        *(Apple TV only)* Object with properties to control Apple TV parallax effects.
+-- |         __*platform* ios__
+-- | - `tvParallaxShiftDistanceX`
+-- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 2.0.
+-- |         __*platform* ios__
+-- | - `tvParallaxShiftDistanceY`
+-- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 2.0.
+-- |         __*platform* ios__
+-- | - `tvParallaxTiltAngle`
+-- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 0.05.
+-- |         __*platform* ios__
+-- | - `updateCellsBatchingPeriod`
+-- |        Amount of time between low-pri item render batches, e.g. for rendering items quite a ways off
+-- |        screen. Similar fill rate/responsiveness tradeoff as `maxToRenderPerBatch`.
+-- | - `windowSize`
+-- |        Determines the maximum number of items rendered outside of the visible area, in units of
+-- |        visible lengths. So if your list fills the screen, then `windowSize={21}` (the default) will
+-- |        render the visible screen area plus up to 10 screens above and 10 below the viewport. Reducing
+-- |        this number will reduce memory consumption and may improve performance, but will increase the
+-- |        chance that fast scrolling may reveal momentary blank areas of unrendered content.
+-- | - `zoomScale`
+-- |        The current scale of the scroll view content. The default value is 1.0.
+
+type SectionListProps_required itemT sectionT  optional = 
+  ( sections :: (Array (SectionBase itemT sectionT))
+  | optional
+  )
+
+
+sectionList
+  :: forall attrs attrs_ itemT sectionT 
+  . Union attrs attrs_ (SectionListProps_optional itemT sectionT )
+  => Record ((SectionListProps_required itemT sectionT ) attrs)
+  -> JSX
+sectionList props = unsafeCreateNativeElement "SectionList" props
+
+
+type SectionListRenderItemInfo itemT sectionT = {
+    index :: Number
+  , item :: itemT
+  , section :: (SectionBase itemT sectionT)
+  , separators :: { highlight :: (Effect Unit), unhighlight :: (Effect Unit), updateProps :: (EffectFn2 String Foreign Unit) }
+}
+
+
+
+-- | - `accessibilityActions`
+-- |        Provides an array of custom actions available for accessibility.
+-- | - `accessibilityElementsHidden`
+-- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
+-- |        are hidden to the screen reader.
+-- |         __*platform* ios__
+-- | - `accessibilityHint`
+-- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
+-- | - `accessibilityIgnoresInvertColors`
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |         __*platform* ios__
+-- | - `accessibilityLabel`
+-- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
+-- |        label is constructed by traversing all the children and accumulating all the Text nodes separated by space.
+-- | - `accessibilityLiveRegion`
+-- |        Indicates to accessibility services whether the user should be notified when this view changes.
+-- |        Works for Android API >= 19 only.
+-- |        See http://developer.android.com/reference/android/view/View.html#attr_android:accessibilityLiveRegion for references.
+-- |         __*platform* android__
+-- | - `accessibilityRole`
+-- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
+-- | - `accessibilityState`
+-- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -8666,6 +9839,8 @@ scrollView_ children = scrollView { children }
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
 -- | - `enabled`
 -- |        If false the user won't be able to interact with the control. Default value is true.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -8709,8 +9884,9 @@ scrollView_ children = scrollView { children }
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -8831,20 +10007,20 @@ scrollView_ children = scrollView { children }
 -- |        The labels for the control's segment buttons, in order.
 
 type SegmentedControlIOSProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  collapsable :: Boolean
   ,  enabled :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
@@ -8852,10 +10028,11 @@ type SegmentedControlIOSProps  =
   ,  momentary :: Boolean
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
   ,  onChange :: (EffectFn1 (NativeSyntheticEvent NativeSegmentedControlIOSChangeEvent) Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -8882,7 +10059,7 @@ type SegmentedControlIOSProps  =
   ,  shouldRasterizeIOS :: Boolean
   ,  style :: CSS
   ,  testID :: String
-  ,  tintColor :: String
+  ,  tintColor :: SegmentedControlIOSPropsTintColor
   ,  tvParallaxMagnification :: Number
   ,  tvParallaxProperties :: { enabled :: Boolean, shiftDistanceX :: Number, shiftDistanceY :: Number, tiltAngle :: Number, magnification :: Number, pressMagnification :: Number, pressDuration :: Number, pressDelay :: Number }
   ,  tvParallaxShiftDistanceX :: Number
@@ -8909,13 +10086,6 @@ segmentedControlIOS_ children = segmentedControlIOS { children }
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -8923,7 +10093,7 @@ segmentedControlIOS_ children = segmentedControlIOS { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -8935,12 +10105,11 @@ segmentedControlIOS_ children = segmentedControlIOS { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -8954,6 +10123,8 @@ segmentedControlIOS_ children = segmentedControlIOS { children }
 -- | - `disabled`
 -- |        If true the user won't be able to move the slider.
 -- |        Default value is false.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -9010,8 +10181,9 @@ segmentedControlIOS_ children = segmentedControlIOS { children }
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -9143,35 +10315,36 @@ segmentedControlIOS_ children = segmentedControlIOS { children }
 -- |        the value during dragging.
 
 type SliderProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  collapsable :: Boolean
   ,  disabled :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
   ,  isTVSelectable :: Boolean
   ,  maximumTrackImage :: ImageURISource
-  ,  maximumTrackTintColor :: String
+  ,  maximumTrackTintColor :: SliderPropsMaximumTrackTintColor
   ,  maximumValue :: Number
   ,  minimumTrackImage :: ImageURISource
-  ,  minimumTrackTintColor :: String
+  ,  minimumTrackTintColor :: SliderPropsMinimumTrackTintColor
   ,  minimumValue :: Number
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -9200,7 +10373,7 @@ type SliderProps  =
   ,  style :: CSS
   ,  testID :: String
   ,  thumbImage :: ImageURISource
-  ,  thumbTintColor :: String
+  ,  thumbTintColor :: SliderPropsAndroidThumbTintColor
   ,  trackImage :: ImageURISource
   ,  tvParallaxMagnification :: Number
   ,  tvParallaxProperties :: { enabled :: Boolean, shiftDistanceX :: Number, shiftDistanceY :: Number, tiltAngle :: Number, magnification :: Number, pressMagnification :: Number, pressDuration :: Number, pressDelay :: Number }
@@ -9228,13 +10401,6 @@ slider_ children = slider { children }
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -9242,7 +10408,7 @@ slider_ children = slider { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -9254,12 +10420,11 @@ slider_ children = slider { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -9270,6 +10435,8 @@ slider_ children = slider { children }
 -- |        Views that are only used to layout their children or otherwise don't draw anything
 -- |        may be automatically removed from the native hierarchy as an optimization.
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -9310,8 +10477,9 @@ slider_ children = slider { children }
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -9421,28 +10589,29 @@ slider_ children = slider { children }
 -- |         __*platform* ios__
 
 type SnapshotViewIOSProps_optional  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  collapsable :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
   ,  isTVSelectable :: Boolean
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -9479,13 +10648,6 @@ type SnapshotViewIOSProps_optional  =
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -9493,7 +10655,7 @@ type SnapshotViewIOSProps_optional  =
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -9505,12 +10667,11 @@ type SnapshotViewIOSProps_optional  =
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -9521,6 +10682,8 @@ type SnapshotViewIOSProps_optional  =
 -- |        Views that are only used to layout their children or otherwise don't draw anything
 -- |        may be automatically removed from the native hierarchy as an optimization.
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -9561,8 +10724,9 @@ type SnapshotViewIOSProps_optional  =
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -9691,23 +10855,27 @@ snapshotViewIOS props = unsafeCreateNativeElement "SnapshotViewIOS" props
 -- |        animated. Supported for backgroundColor, barStyle and hidden.
 -- | - `backgroundColor`
 -- |        The background color of the status bar.
+-- |         __*platform* android__
 -- | - `barStyle`
 -- |        Sets the color of the status bar text.
 -- | - `hidden`
 -- |        If the status bar is hidden.
 -- | - `networkActivityIndicatorVisible`
 -- |        If the network activity indicator should be visible.
+-- |         __*platform* ios__
 -- | - `showHideTransition`
 -- |        The transition effect when showing and hiding the status bar using
 -- |        the hidden prop. Defaults to 'fade'.
+-- |         __*platform* ios__
 -- | - `translucent`
 -- |        If the status bar is translucent. When translucent is set to true,
 -- |        the app will draw under the status bar. This is useful when using a
 -- |        semi transparent status bar color.
+-- |         __*platform* android__
 
 type StatusBarProps  = 
   ( animated :: Boolean
-  ,  backgroundColor :: String
+  ,  backgroundColor :: StatusBarPropsAndroidBackgroundColor
   ,  barStyle :: String
   ,  hidden :: Boolean
   ,  networkActivityIndicatorVisible :: Boolean
@@ -9771,16 +10939,11 @@ swipeableListView
 swipeableListView props = unsafeCreateNativeElement "SwipeableListView" props
 
 
--- | https://facebook.github.io/react-native/docs/switchios.html#props
+-- | SwitchIOS Component has been removed from react-native in favor of Switch Component
+-- | https://github.com/facebook/react-native/pull/9891/files
+-- |  __*deprecated* see SwitchProps__
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -9788,7 +10951,7 @@ swipeableListView props = unsafeCreateNativeElement "SwipeableListView" props
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -9800,12 +10963,11 @@ swipeableListView props = unsafeCreateNativeElement "SwipeableListView" props
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -9818,6 +10980,8 @@ swipeableListView props = unsafeCreateNativeElement "SwipeableListView" props
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
 -- | - `disabled`
 -- |        If true the user won't be able to toggle the switch. Default value is false.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -9858,8 +11022,9 @@ swipeableListView props = unsafeCreateNativeElement "SwipeableListView" props
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -9979,29 +11144,30 @@ swipeableListView props = unsafeCreateNativeElement "SwipeableListView" props
 -- |        The value of the switch, if true the switch will be turned on. Default value is false.
 
 type SwitchIOSProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  collapsable :: Boolean
   ,  disabled :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
   ,  isTVSelectable :: Boolean
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -10015,7 +11181,7 @@ type SwitchIOSProps  =
   ,  onResponderTerminationRequest :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onStartShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onStartShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
-  ,  onTintColor :: String
+  ,  onTintColor :: SwitchIOSPropsOnTintColor
   ,  onTouchCancel :: (EffectFn1 GestureResponderEvent Unit)
   ,  onTouchEnd :: (EffectFn1 GestureResponderEvent Unit)
   ,  onTouchEndCapture :: (EffectFn1 GestureResponderEvent Unit)
@@ -10028,8 +11194,8 @@ type SwitchIOSProps  =
   ,  shouldRasterizeIOS :: Boolean
   ,  style :: CSS
   ,  testID :: String
-  ,  thumbTintColor :: String
-  ,  tintColor :: String
+  ,  thumbTintColor :: SwitchIOSPropsThumbTintColor
+  ,  tintColor :: SwitchIOSPropsTintColor
   ,  tvParallaxMagnification :: Number
   ,  tvParallaxProperties :: { enabled :: Boolean, shiftDistanceX :: Number, shiftDistanceY :: Number, tiltAngle :: Number, magnification :: Number, pressMagnification :: Number, pressDuration :: Number, pressDelay :: Number }
   ,  tvParallaxShiftDistanceX :: Number
@@ -10056,13 +11222,6 @@ switchIOS_ children = switchIOS { children }
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -10070,7 +11229,7 @@ switchIOS_ children = switchIOS { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -10082,12 +11241,11 @@ switchIOS_ children = switchIOS { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -10101,6 +11259,8 @@ switchIOS_ children = switchIOS { children }
 -- | - `disabled`
 -- |        If true the user won't be able to toggle the switch.
 -- |        Default value is false.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -10144,8 +11304,9 @@ switchIOS_ children = switchIOS { children }
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -10205,6 +11366,7 @@ switchIOS_ children = switchIOS { children }
 -- |        it should have a onStartShouldSetResponderCapture handler which returns true.
 -- | - `onTintColor`
 -- |        Background color when the switch is turned on.
+-- |         __*deprecated* use trackColor instead__
 -- | - `onValueChange`
 -- |        Invoked with the new value when the value changes.
 -- | - `pointerEvents`
@@ -10246,8 +11408,10 @@ switchIOS_ children = switchIOS { children }
 -- |        Color of the foreground switch grip.
 -- | - `thumbTintColor`
 -- |        Color of the foreground switch grip.
+-- |         __*deprecated* use thumbColor instead__
 -- | - `tintColor`
 -- |        Background color when the switch is turned off.
+-- |         __*deprecated* use trackColor instead__
 -- | - `trackColor`
 -- |        Custom colors for the switch track
 -- |        Color when false and color when true
@@ -10271,30 +11435,31 @@ switchIOS_ children = switchIOS { children }
 -- |        Default value is false.
 
 type SwitchProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  collapsable :: Boolean
   ,  disabled :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
-  ,  ios_backgroundColor :: String
+  ,  ios_backgroundColor :: SwitchPropsIos_backgroundColor
   ,  isTVSelectable :: Boolean
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -10308,7 +11473,7 @@ type SwitchProps  =
   ,  onResponderTerminationRequest :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onStartShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onStartShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
-  ,  onTintColor :: String
+  ,  onTintColor :: SwitchPropsIOSOnTintColor
   ,  onTouchCancel :: (EffectFn1 GestureResponderEvent Unit)
   ,  onTouchEnd :: (EffectFn1 GestureResponderEvent Unit)
   ,  onTouchEndCapture :: (EffectFn1 GestureResponderEvent Unit)
@@ -10321,10 +11486,10 @@ type SwitchProps  =
   ,  shouldRasterizeIOS :: Boolean
   ,  style :: CSS
   ,  testID :: String
-  ,  thumbColor :: String
-  ,  thumbTintColor :: String
-  ,  tintColor :: String
-  ,  trackColor :: { false :: String, true :: String }
+  ,  thumbColor :: SwitchPropsThumbColor
+  ,  thumbTintColor :: SwitchPropsIOSThumbTintColor
+  ,  tintColor :: SwitchPropsIOSTintColor
+  ,  trackColor :: { false :: SwitchPropsFalse, true :: SwitchPropsTrue }
   ,  tvParallaxMagnification :: Number
   ,  tvParallaxProperties :: { enabled :: Boolean, shiftDistanceX :: Number, shiftDistanceY :: Number, tiltAngle :: Number, magnification :: Number, pressMagnification :: Number, pressDuration :: Number, pressDelay :: Number }
   ,  tvParallaxShiftDistanceX :: Number
@@ -10348,16 +11513,9 @@ switch_ :: Array JSX -> JSX
 switch_ children = switch { children }
 
 
--- | see <https://facebook.github.io/react-native/docs/tabbarios-item.html#props>
+-- | see <https://reactnative.dev/docs/tabbarios-item#props>
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -10365,7 +11523,7 @@ switch_ children = switch { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -10377,12 +11535,11 @@ switch_ children = switch { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -10397,6 +11554,8 @@ switch_ children = switch { children }
 -- |        Views that are only used to layout their children or otherwise don't draw anything
 -- |        may be automatically removed from the native hierarchy as an optimization.
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -10439,8 +11598,9 @@ switch_ children = switch { children }
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -10546,7 +11706,7 @@ switch_ children = switch { children }
 -- |        React style object.
 -- | - `systemIcon`
 -- |        Items comes with a few predefined system icons.
--- |        Note that if you are using them, the title and selectedIcon will be overriden with the system ones.
+-- |        Note that if you are using them, the title and selectedIcon will be overridden with the system ones.
 -- |          enum('bookmarks', 'contacts', 'downloads', 'favorites', 'featured', 'history', 'more', 'most-recent', 'most-viewed', 'recents', 'search', 'top-rated')
 -- | - `testID`
 -- |        Used to locate this view in end-to-end tests.
@@ -10569,21 +11729,21 @@ switch_ children = switch { children }
 -- |         __*platform* ios__
 
 type TabBarIOSItemProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  badge :: String
-  ,  badgeColor :: String
+  ,  badgeColor :: TabBarIOSItemPropsBadgeColor
   ,  collapsable :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  icon :: ImageURISource
@@ -10591,9 +11751,10 @@ type TabBarIOSItemProps  =
   ,  isTVSelectable :: Boolean
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -10646,16 +11807,9 @@ tabBarIOSItem_ :: Array JSX -> JSX
 tabBarIOSItem_ children = tabBarIOSItem { children }
 
 
--- | see <https://facebook.github.io/react-native/docs/tabbarios.html#props>
+-- | see <https://reactnative.dev/docs/tabbarios#props>
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -10663,7 +11817,7 @@ tabBarIOSItem_ children = tabBarIOSItem { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -10675,12 +11829,11 @@ tabBarIOSItem_ children = tabBarIOSItem { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -10693,6 +11846,8 @@ tabBarIOSItem_ children = tabBarIOSItem { children }
 -- |        Views that are only used to layout their children or otherwise don't draw anything
 -- |        may be automatically removed from the native hierarchy as an optimization.
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -10741,8 +11896,9 @@ tabBarIOSItem_ children = tabBarIOSItem { children }
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -10860,20 +12016,20 @@ tabBarIOSItem_ children = tabBarIOSItem { children }
 -- |        Color of text on unselected tabs
 
 type TabBarIOSProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
-  ,  barTintColor :: String
+  ,  barTintColor :: TabBarIOSPropsBarTintColor
   ,  collapsable :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
@@ -10881,9 +12037,10 @@ type TabBarIOSProps  =
   ,  itemPositioning :: String
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -10908,15 +12065,15 @@ type TabBarIOSProps  =
   ,  shouldRasterizeIOS :: Boolean
   ,  style :: CSS
   ,  testID :: String
-  ,  tintColor :: String
+  ,  tintColor :: TabBarIOSPropsTintColor
   ,  translucent :: Boolean
   ,  tvParallaxMagnification :: Number
   ,  tvParallaxProperties :: { enabled :: Boolean, shiftDistanceX :: Number, shiftDistanceY :: Number, tiltAngle :: Number, magnification :: Number, pressMagnification :: Number, pressDuration :: Number, pressDelay :: Number }
   ,  tvParallaxShiftDistanceX :: Number
   ,  tvParallaxShiftDistanceY :: Number
   ,  tvParallaxTiltAngle :: Number
-  ,  unselectedItemTintColor :: String
-  ,  unselectedTintColor :: String
+  ,  unselectedItemTintColor :: TabBarIOSPropsUnselectedItemTintColor
+  ,  unselectedTintColor :: TabBarIOSPropsUnselectedTintColor
   ,  key :: String
   ,  children :: Array JSX
   )
@@ -10968,16 +12125,9 @@ type TextInputKeyPressEventData  = {
 }
 
 
--- | see <https://facebook.github.io/react-native/docs/textinput.html#props>
+-- | see <https://reactnative.dev/docs/textinput#props>
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -10985,7 +12135,7 @@ type TextInputKeyPressEventData  = {
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -10997,12 +12147,11 @@ type TextInputKeyPressEventData  = {
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -11018,7 +12167,7 @@ type TextInputKeyPressEventData  = {
 -- |              words: first letter of each word
 -- |              sentences: first letter of each sentence (default)
 -- |              none: don't auto capitalize anything
--- |        https://facebook.github.io/react-native/docs/textinput.html#autocapitalize
+-- |        https://reactnative.dev/docs/textinput#autocapitalize
 -- | - `autoCompleteType`
 -- |        Determines which content to suggest on auto complete, e.g.`username`.
 -- |        To disable auto complete, use `off`.
@@ -11085,6 +12234,8 @@ type TextInputKeyPressEventData  = {
 -- | - `enablesReturnKeyAutomatically`
 -- |        If true, the keyboard disables the return key when there is no text and automatically enables it when there is text.
 -- |        The default value is false.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -11106,6 +12257,17 @@ type TextInputKeyPressEventData  = {
 -- |              'yes' - The view is important for accessibility.
 -- |              'no' - The view is not important for accessibility.
 -- |              'no-hide-descendants' - The view is not important for accessibility, nor are any of its descendant views.
+-- | - `importantForAutofill`
+-- |        Determines whether the individual fields in your app should be included in a
+-- |        view structure for autofill purposes on Android API Level 26+. Defaults to auto.
+-- |        To disable auto complete, use `off`.
+-- |        *Android Only*
+-- |        The following values work on Android only:
+-- |        - `auto` - let Android decide
+-- |        - `no` - not important for autofill
+-- |        - `noExcludeDescendants` - this view and its children aren't important for autofill
+-- |        - `yes` - is important for autofill
+-- |        - `yesExcludeDescendants` - this view is important for autofill but its children aren't
 -- | - `inlineImageLeft`
 -- |        If defined, the provided image resource will be rendered on the left.
 -- | - `inlineImagePadding`
@@ -11113,7 +12275,7 @@ type TextInputKeyPressEventData  = {
 -- | - `inputAccessoryViewID`
 -- |        Used to connect to an InputAccessoryView. Not part of react-natives documentation, but present in examples and
 -- |        code.
--- |        See https://facebook.github.io/react-native/docs/inputaccessoryview.html for more information.
+-- |        See https://reactnative.dev/docs/inputaccessoryview for more information.
 -- | - `isTVSelectable`
 -- |        *(Apple TV only)* When set to true, this view will be focusable
 -- |        and navigable using the Apple TV remote.
@@ -11155,8 +12317,9 @@ type TextInputKeyPressEventData  = {
 -- |        Sets the number of lines for a TextInput.
 -- |        Use it with multiline set to true to be able to fill the lines.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -11245,6 +12408,14 @@ type TextInputKeyPressEventData  = {
 -- |        it should have a onStartShouldSetResponderCapture handler which returns true.
 -- | - `onSubmitEditing`
 -- |        Callback that is called when the text input's submit button is pressed.
+-- | - `onTextInput`
+-- |        Callback that is called on new text input with the argument
+-- |          `{ nativeEvent: { text, previousText, range: { start, end } } }`.
+-- |        This prop requires multiline={true} to be set.
+-- | - `passwordRules`
+-- |        Provide rules for your password.
+-- |        For example, say you want to require a password with at least eight characters consisting of a mix of uppercase and lowercase letters, at least one number, and at most two consecutive characters.
+-- |        "required: upper; required: lower; required: digit; max-consecutive: 2; minlength: 8;"
 -- | - `placeholder`
 -- |        The string that will be rendered before text input has been entered
 -- | - `placeholderTextColor`
@@ -11266,6 +12437,11 @@ type TextInputKeyPressEventData  = {
 -- |        }
 -- |        But since pointerEvents does not affect layout/appearance, and we are already deviating from the spec by adding additional modes,
 -- |        we opt to not include pointerEvents on style. On some platforms, we would need to implement it as a className anyways. Using style or not is an implementation detail of the platform.
+-- | - `rejectResponderTermination`
+-- |        If `true`, allows TextInput to pass touch events to the parent component.
+-- |        This allows components to be swipeable from the TextInput on iOS,
+-- |        as is the case on Android by default.
+-- |        If `false`, TextInput always asks to handle the input (except when disabled).
 -- | - `removeClippedSubviews`
 -- |        This is a special performance property exposed by RCTView and is useful for scrolling content when there are many subviews,
 -- |        most of which are offscreen. For this property to be effective, it must be applied to a view that contains many subviews that extend outside its bound.
@@ -11302,12 +12478,16 @@ type TextInputKeyPressEventData  = {
 -- |        and quickly composite it during each frame.
 -- |        Rasterization incurs an off-screen drawing pass and the bitmap consumes memory.
 -- |        Test and measure when using this property.
+-- | - `showSoftInputOnFocus`
+-- |        When false, it will prevent the soft keyboard from showing when the field is focused. The default value is true
 -- | - `spellCheck`
 -- |        If false, disables spell-check style (i.e. red underlines). The default value is inherited from autoCorrect
 -- | - `style`
 -- |        Styles
 -- | - `testID`
 -- |        Used to locate this view in end-to-end tests
+-- | - `textAlign`
+-- |        Align the input text to the left, center, or right sides of the input field.
 -- | - `textAlignVertical`
 -- |        Vertically align text when `multiline` is set to true
 -- | - `textBreakStrategy`
@@ -11376,16 +12556,15 @@ type TextInputKeyPressEventData  = {
 -- |        or set/update maxLength to prevent unwanted edits without flicker.
 
 type TextInputProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  allowFontScaling :: Boolean
@@ -11404,9 +12583,11 @@ type TextInputProps  =
   ,  disableFullscreenUI :: Boolean
   ,  editable :: Boolean
   ,  enablesReturnKeyAutomatically :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
+  ,  importantForAutofill :: String
   ,  inlineImageLeft :: String
   ,  inlineImagePadding :: Number
   ,  inputAccessoryViewID :: String
@@ -11419,7 +12600,8 @@ type TextInputProps  =
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
   ,  numberOfLines :: Number
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
   ,  onBlur :: (EffectFn1 (NativeSyntheticEvent TextInputFocusEventData) Unit)
   ,  onChange :: (EffectFn1 (NativeSyntheticEvent TextInputChangeEventData) Unit)
@@ -11428,7 +12610,7 @@ type TextInputProps  =
   ,  onEndEditing :: (EffectFn1 (NativeSyntheticEvent TextInputEndEditingEventData) Unit)
   ,  onFocus :: (EffectFn1 (NativeSyntheticEvent TextInputFocusEventData) Unit)
   ,  onKeyPress :: (EffectFn1 (NativeSyntheticEvent TextInputKeyPressEventData) Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -11445,14 +12627,17 @@ type TextInputProps  =
   ,  onStartShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onStartShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onSubmitEditing :: (EffectFn1 (NativeSyntheticEvent TextInputSubmitEditingEventData) Unit)
+  ,  onTextInput :: (EffectFn1 (NativeSyntheticEvent TextInputTextInputEventData) Unit)
   ,  onTouchCancel :: (EffectFn1 GestureResponderEvent Unit)
   ,  onTouchEnd :: (EffectFn1 GestureResponderEvent Unit)
   ,  onTouchEndCapture :: (EffectFn1 GestureResponderEvent Unit)
   ,  onTouchMove :: (EffectFn1 GestureResponderEvent Unit)
   ,  onTouchStart :: (EffectFn1 GestureResponderEvent Unit)
+  ,  passwordRules :: String
   ,  placeholder :: String
-  ,  placeholderTextColor :: String
+  ,  placeholderTextColor :: TextInputPropsPlaceholderTextColor
   ,  pointerEvents :: String
+  ,  rejectResponderTermination :: String
   ,  removeClippedSubviews :: Boolean
   ,  renderToHardwareTextureAndroid :: Boolean
   ,  returnKeyLabel :: String
@@ -11461,12 +12646,14 @@ type TextInputProps  =
   ,  secureTextEntry :: Boolean
   ,  selectTextOnFocus :: Boolean
   ,  selection :: { start :: Number, end :: Number }
-  ,  selectionColor :: String
+  ,  selectionColor :: TextInputPropsSelectionColor
   ,  selectionState :: DocumentSelectionState
   ,  shouldRasterizeIOS :: Boolean
+  ,  showSoftInputOnFocus :: Boolean
   ,  spellCheck :: Boolean
   ,  style :: CSS
   ,  testID :: String
+  ,  textAlign :: String
   ,  textAlignVertical :: String
   ,  textBreakStrategy :: String
   ,  textContentType :: String
@@ -11475,7 +12662,7 @@ type TextInputProps  =
   ,  tvParallaxShiftDistanceX :: Number
   ,  tvParallaxShiftDistanceY :: Number
   ,  tvParallaxTiltAngle :: Number
-  ,  underlineColorAndroid :: String
+  ,  underlineColorAndroid :: TextInputAndroidPropsUnderlineColorAndroid
   ,  value :: String
   ,  key :: String
   ,  children :: Array JSX
@@ -11510,13 +12697,35 @@ type TextInputSubmitEditingEventData  = {
 }
 
 
+type TextInputTextInputEventData  = {
+    previousText :: String
+  , range :: { start :: Number, end :: Number }
+  , text :: String
+}
 
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
+
+type TextLayoutEventData  = {
+    lines :: (Array TextLayoutLine)
+  , target :: Number
+}
+
+
+type TextLayoutLine  = {
+    ascender :: Number
+  , capHeight :: Number
+  , descender :: Number
+  , height :: Number
+  , text :: String
+  , width :: Number
+  , x :: Number
+  , xHeight :: Number
+  , y :: Number
+}
+
+
+
+-- | - `accessibilityActions`
+-- |        Provides an array of custom actions available for accessibility.
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -11524,7 +12733,7 @@ type TextInputSubmitEditingEventData  = {
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -11536,11 +12745,13 @@ type TextInputSubmitEditingEventData  = {
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
+-- | - `accessibilityViewIsModal`
+-- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
 -- | - `accessible`
 -- |        When true, indicates that the view is an accessibility element.
@@ -11550,6 +12761,9 @@ type TextInputSubmitEditingEventData  = {
 -- | - `allowFontScaling`
 -- |        Specifies whether fonts should scale to respect Text Size accessibility settings.
 -- |        The default is `true`.
+-- | - `dataDetectorType`
+-- |        Determines the types of data converted to clickable URLs in the text element.
+-- |        By default no data types are detected.
 -- | - `ellipsizeMode`
 -- |        This can be one of the following values:
 -- |        - `head` - The line is displayed so that the end fits in the container and the missing text
@@ -11588,6 +12802,11 @@ type TextInputSubmitEditingEventData  = {
 -- |        layout, including line wrapping, such that the total number of lines
 -- |        does not exceed this number.
 -- |        This prop is commonly used with `ellipsizeMode`.
+-- | - `onAccessibilityAction`
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
+-- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
 -- |         __*platform* ios__
@@ -11597,19 +12816,20 @@ type TextInputSubmitEditingEventData  = {
 -- | - `onLongPress`
 -- |        This function is called on long press.
 -- |        e.g., `onLongPress={this.increaseSize}>``
--- |             *
 -- | - `onMagicTap`
 -- |        When accessible is true, the system will invoke this function when the user performs the magic tap gesture.
 -- |         __*platform* ios__
 -- | - `onPress`
 -- |        This function is called on press.
 -- |        Text intrinsically supports press handling with a default highlight state (which can be disabled with suppressHighlighting).
+-- | - `onTextLayout`
+-- |        Invoked on Text layout
 -- | - `selectable`
 -- |        Lets the user select text, to use the native copy and paste functionality.
 -- | - `selectionColor`
 -- |        The highlight color of the text.
 -- | - `style`
--- |        see <https://facebook.github.io/react-native/docs/text.html#style>
+-- |        see <https://reactnative.dev/docs/text#style>
 -- | - `suppressHighlighting`
 -- |        When `true`, no visual change is made when text is pressed down. By
 -- |        default, a gray oval highlights the text on press down.
@@ -11620,18 +12840,20 @@ type TextInputSubmitEditingEventData  = {
 -- |        default is `highQuality`.
 
 type TextProps  = 
-  ( accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
+  ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  adjustsFontSizeToFit :: Boolean
   ,  allowFontScaling :: Boolean
+  ,  dataDetectorType :: String
   ,  ellipsizeMode :: String
   ,  importantForAccessibility :: String
   ,  lineBreakMode :: String
@@ -11639,13 +12861,16 @@ type TextProps  =
   ,  minimumFontScale :: Number
   ,  nativeID :: String
   ,  numberOfLines :: Number
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onLongPress :: (EffectFn1 GestureResponderEvent Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onPress :: (EffectFn1 GestureResponderEvent Unit)
+  ,  onTextLayout :: (EffectFn1 (NativeSyntheticEvent TextLayoutEventData) Unit)
   ,  selectable :: Boolean
-  ,  selectionColor :: String
+  ,  selectionColor :: TextPropsAndroidSelectionColor
   ,  style :: CSS
   ,  suppressHighlighting :: Boolean
   ,  testID :: String
@@ -11670,13 +12895,6 @@ text_ children = text { children }
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -11684,7 +12902,7 @@ text_ children = text { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -11696,12 +12914,11 @@ text_ children = text { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -11734,6 +12951,8 @@ text_ children = text { children }
 -- |        other than the navigation button and menu. Insets define the
 -- |        minimum margin for these components and can be used to effectively
 -- |        align Toolbar content along well-known gridlines.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -11778,8 +12997,9 @@ text_ children = text { children }
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -11912,22 +13132,22 @@ text_ children = text { children }
 -- |         __*platform* ios__
 
 type ToolbarAndroidProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  actions :: (Array { title :: String, icon :: ImageURISource, show :: String, showWithText :: Boolean })
   ,  collapsable :: Boolean
   ,  contentInsetEnd :: Number
   ,  contentInsetStart :: Number
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
@@ -11936,11 +13156,12 @@ type ToolbarAndroidProps  =
   ,  nativeID :: String
   ,  navIcon :: ImageURISource
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
   ,  onActionSelected :: (EffectFn1 Number Unit)
   ,  onIconClicked :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -11967,10 +13188,10 @@ type ToolbarAndroidProps  =
   ,  shouldRasterizeIOS :: Boolean
   ,  style :: CSS
   ,  subtitle :: String
-  ,  subtitleColor :: String
+  ,  subtitleColor :: ToolbarAndroidPropsSubtitleColor
   ,  testID :: String
   ,  title :: String
-  ,  titleColor :: String
+  ,  titleColor :: ToolbarAndroidPropsTitleColor
   ,  tvParallaxMagnification :: Number
   ,  tvParallaxProperties :: { enabled :: Boolean, shiftDistanceX :: Number, shiftDistanceY :: Number, tiltAngle :: Number, magnification :: Number, pressMagnification :: Number, pressDuration :: Number, pressDelay :: Number }
   ,  tvParallaxShiftDistanceX :: Number
@@ -11993,13 +13214,9 @@ toolbarAndroid_ :: Array JSX -> JSX
 toolbarAndroid_ children = toolbarAndroid { children }
 
 
--- | see <https://facebook.github.io/react-native/docs/touchablehighlight.html#props>
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
+-- | see <https://reactnative.dev/docs/touchablehighlight#props>
+-- | - `accessibilityActions`
+-- |        Provides an array of custom actions available for accessibility.
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -12007,7 +13224,7 @@ toolbarAndroid_ children = toolbarAndroid { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -12019,11 +13236,13 @@ toolbarAndroid_ children = toolbarAndroid { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
+-- | - `accessibilityViewIsModal`
+-- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
 -- | - `accessible`
 -- |        When true, indicates that the view is an accessibility element.
@@ -12056,6 +13275,11 @@ toolbarAndroid_ children = toolbarAndroid { children }
 -- |              'yes' - The view is important for accessibility.
 -- |              'no' - The view is not important for accessibility.
 -- |              'no-hide-descendants' - The view is not important for accessibility, nor are any of its descendant views.
+-- | - `onAccessibilityAction`
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
+-- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
 -- |         __*platform* ios__
@@ -12088,9 +13312,12 @@ toolbarAndroid_ children = toolbarAndroid { children }
 -- |        while the scroll view is disabled. Ensure you pass in a constant
 -- |        to reduce memory allocations.
 -- | - `style`
--- |        see <https://facebook.github.io/react-native/docs/view.html#style>
+-- |        see <https://reactnative.dev/docs/view#style>
 -- | - `testID`
 -- |        Used to locate this view in end-to-end tests.
+-- | - `touchSoundDisabled`
+-- |        If true, doesn't play a system sound on touch.
+-- |         __*platform* android__
 -- | - `tvParallaxProperties`
 -- |        *(Apple TV only)* Object with properties to control Apple TV parallax effects.
 -- |        enabled: If true, parallax effects are enabled.  Defaults to true.
@@ -12106,29 +13333,32 @@ toolbarAndroid_ children = toolbarAndroid { children }
 -- |        The color of the underlay that will show through when the touch is active.
 
 type TouchableHighlightProps  = 
-  ( accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
+  ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  activeOpacity :: Number
   ,  delayLongPress :: Number
   ,  delayPressIn :: Number
   ,  delayPressOut :: Number
-  ,  disabled :: Boolean
+  ,  disabled :: String
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
   ,  onBlur :: (EffectFn1 (NativeSyntheticEvent TargetedEvent) Unit)
   ,  onFocus :: (EffectFn1 (NativeSyntheticEvent TargetedEvent) Unit)
   ,  onHideUnderlay :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onLongPress :: (EffectFn1 GestureResponderEvent Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onPress :: (EffectFn1 GestureResponderEvent Unit)
@@ -12138,8 +13368,9 @@ type TouchableHighlightProps  =
   ,  pressRetentionOffset :: Insets
   ,  style :: CSS
   ,  testID :: String
+  ,  touchSoundDisabled :: String
   ,  tvParallaxProperties :: { enabled :: Boolean, shiftDistanceX :: Number, shiftDistanceY :: Number, tiltAngle :: Number, magnification :: Number, pressMagnification :: Number, pressDuration :: Number, pressDelay :: Number }
-  ,  underlayColor :: String
+  ,  underlayColor :: TouchableHighlightPropsUnderlayColor
   ,  key :: String
   ,  children :: Array JSX
   )
@@ -12157,13 +13388,9 @@ touchableHighlight_ :: Array JSX -> JSX
 touchableHighlight_ children = touchableHighlight { children }
 
 
--- | see <https://facebook.github.io/react-native/docs/touchableopacity.html#props>
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
+-- | see <https://reactnative.dev/docs/touchableopacity#props>
+-- | - `accessibilityActions`
+-- |        Provides an array of custom actions available for accessibility.
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -12171,7 +13398,7 @@ touchableHighlight_ children = touchableHighlight { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -12183,11 +13410,13 @@ touchableHighlight_ children = touchableHighlight { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
+-- | - `accessibilityViewIsModal`
+-- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
 -- | - `accessible`
 -- |        When true, indicates that the view is an accessibility element.
@@ -12231,6 +13460,11 @@ touchableHighlight_ children = touchableHighlight { children }
 -- |              'yes' - The view is important for accessibility.
 -- |              'no' - The view is not important for accessibility.
 -- |              'no-hide-descendants' - The view is not important for accessibility, nor are any of its descendant views.
+-- | - `onAccessibilityAction`
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
+-- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
 -- |         __*platform* ios__
@@ -12262,6 +13496,9 @@ touchableHighlight_ children = touchableHighlight { children }
 -- |        //FIXME: not in doc but available in examples
 -- | - `testID`
 -- |        Used to locate this view in end-to-end tests.
+-- | - `touchSoundDisabled`
+-- |        If true, doesn't play a system sound on touch.
+-- |         __*platform* android__
 -- | - `tvParallaxProperties`
 -- |        *(Apple TV only)* Object with properties to control Apple TV parallax effects.
 -- |        enabled: If true, parallax effects are enabled.  Defaults to true.
@@ -12275,28 +13512,31 @@ touchableHighlight_ children = touchableHighlight { children }
 -- |         __*platform* ios__
 
 type TouchableNativeFeedbackProps  = 
-  ( accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
+  ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  background :: (Object Foreign)
   ,  delayLongPress :: Number
   ,  delayPressIn :: Number
   ,  delayPressOut :: Number
-  ,  disabled :: Boolean
+  ,  disabled :: String
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
   ,  onBlur :: (EffectFn1 (NativeSyntheticEvent TargetedEvent) Unit)
   ,  onFocus :: (EffectFn1 (NativeSyntheticEvent TargetedEvent) Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onLongPress :: (EffectFn1 GestureResponderEvent Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onPress :: (EffectFn1 GestureResponderEvent Unit)
@@ -12305,6 +13545,7 @@ type TouchableNativeFeedbackProps  =
   ,  pressRetentionOffset :: Insets
   ,  style :: CSS
   ,  testID :: String
+  ,  touchSoundDisabled :: String
   ,  tvParallaxProperties :: { enabled :: Boolean, shiftDistanceX :: Number, shiftDistanceY :: Number, tiltAngle :: Number, magnification :: Number, pressMagnification :: Number, pressDuration :: Number, pressDelay :: Number }
   ,  useForeground :: Boolean
   ,  key :: String
@@ -12324,13 +13565,9 @@ touchableNativeFeedback_ :: Array JSX -> JSX
 touchableNativeFeedback_ children = touchableNativeFeedback { children }
 
 
--- | see <https://facebook.github.io/react-native/docs/touchableopacity.html#props>
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
+-- | see <https://reactnative.dev/docs/touchableopacity#props>
+-- | - `accessibilityActions`
+-- |        Provides an array of custom actions available for accessibility.
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -12338,7 +13575,7 @@ touchableNativeFeedback_ children = touchableNativeFeedback { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -12350,11 +13587,13 @@ touchableNativeFeedback_ children = touchableNativeFeedback { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
+-- | - `accessibilityViewIsModal`
+-- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
 -- | - `accessible`
 -- |        When true, indicates that the view is an accessibility element.
@@ -12388,6 +13627,11 @@ touchableNativeFeedback_ children = touchableNativeFeedback { children }
 -- |              'yes' - The view is important for accessibility.
 -- |              'no' - The view is not important for accessibility.
 -- |              'no-hide-descendants' - The view is not important for accessibility, nor are any of its descendant views.
+-- | - `onAccessibilityAction`
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
+-- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
 -- |         __*platform* ios__
@@ -12419,6 +13663,9 @@ touchableNativeFeedback_ children = touchableNativeFeedback { children }
 -- |        //FIXME: not in doc but available in examples
 -- | - `testID`
 -- |        Used to locate this view in end-to-end tests.
+-- | - `touchSoundDisabled`
+-- |        If true, doesn't play a system sound on touch.
+-- |         __*platform* android__
 -- | - `tvParallaxProperties`
 -- |        *(Apple TV only)* Object with properties to control Apple TV parallax effects.
 -- |        enabled: If true, parallax effects are enabled.  Defaults to true.
@@ -12432,28 +13679,31 @@ touchableNativeFeedback_ children = touchableNativeFeedback { children }
 -- |         __*platform* ios__
 
 type TouchableOpacityProps  = 
-  ( accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
+  ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  activeOpacity :: Number
   ,  delayLongPress :: Number
   ,  delayPressIn :: Number
   ,  delayPressOut :: Number
-  ,  disabled :: Boolean
+  ,  disabled :: String
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
   ,  onBlur :: (EffectFn1 (NativeSyntheticEvent TargetedEvent) Unit)
   ,  onFocus :: (EffectFn1 (NativeSyntheticEvent TargetedEvent) Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onLongPress :: (EffectFn1 GestureResponderEvent Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onPress :: (EffectFn1 GestureResponderEvent Unit)
@@ -12462,6 +13712,7 @@ type TouchableOpacityProps  =
   ,  pressRetentionOffset :: Insets
   ,  style :: CSS
   ,  testID :: String
+  ,  touchSoundDisabled :: String
   ,  tvParallaxProperties :: { enabled :: Boolean, shiftDistanceX :: Number, shiftDistanceY :: Number, tiltAngle :: Number, magnification :: Number, pressMagnification :: Number, pressDuration :: Number, pressDelay :: Number }
   ,  key :: String
   ,  children :: Array JSX
@@ -12480,13 +13731,9 @@ touchableOpacity_ :: Array JSX -> JSX
 touchableOpacity_ children = touchableOpacity { children }
 
 
--- | see <https://facebook.github.io/react-native/docs/touchablewithoutfeedback.html#props>
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
+-- | see <https://reactnative.dev/docs/touchablewithoutfeedback#props>
+-- | - `accessibilityActions`
+-- |        Provides an array of custom actions available for accessibility.
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -12494,7 +13741,7 @@ touchableOpacity_ children = touchableOpacity { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -12506,11 +13753,13 @@ touchableOpacity_ children = touchableOpacity { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
+-- | - `accessibilityViewIsModal`
+-- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
 -- | - `accessible`
 -- |        When true, indicates that the view is an accessibility element.
@@ -12541,6 +13790,11 @@ touchableOpacity_ children = touchableOpacity { children }
 -- |              'yes' - The view is important for accessibility.
 -- |              'no' - The view is not important for accessibility.
 -- |              'no-hide-descendants' - The view is not important for accessibility, nor are any of its descendant views.
+-- | - `onAccessibilityAction`
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
+-- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
 -- |         __*platform* ios__
@@ -12572,6 +13826,9 @@ touchableOpacity_ children = touchableOpacity { children }
 -- |        //FIXME: not in doc but available in examples
 -- | - `testID`
 -- |        Used to locate this view in end-to-end tests.
+-- | - `touchSoundDisabled`
+-- |        If true, doesn't play a system sound on touch.
+-- |         __*platform* android__
 -- | - `tvParallaxProperties`
 -- |        *(Apple TV only)* Object with properties to control Apple TV parallax effects.
 -- |        enabled: If true, parallax effects are enabled.  Defaults to true.
@@ -12585,27 +13842,30 @@ touchableOpacity_ children = touchableOpacity { children }
 -- |         __*platform* ios__
 
 type TouchableWithoutFeedbackProps  = 
-  ( accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
+  ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  delayLongPress :: Number
   ,  delayPressIn :: Number
   ,  delayPressOut :: Number
-  ,  disabled :: Boolean
+  ,  disabled :: String
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
   ,  onBlur :: (EffectFn1 (NativeSyntheticEvent TargetedEvent) Unit)
   ,  onFocus :: (EffectFn1 (NativeSyntheticEvent TargetedEvent) Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onLongPress :: (EffectFn1 GestureResponderEvent Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onPress :: (EffectFn1 GestureResponderEvent Unit)
@@ -12614,6 +13874,7 @@ type TouchableWithoutFeedbackProps  =
   ,  pressRetentionOffset :: Insets
   ,  style :: CSS
   ,  testID :: String
+  ,  touchSoundDisabled :: String
   ,  tvParallaxProperties :: { enabled :: Boolean, shiftDistanceX :: Number, shiftDistanceY :: Number, tiltAngle :: Number, magnification :: Number, pressMagnification :: Number, pressDuration :: Number, pressDelay :: Number }
   ,  key :: String
   ,  children :: Array JSX
@@ -12646,13 +13907,6 @@ type ViewPagerAndroidOnPageSelectedEventData  = {
 
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -12660,7 +13914,7 @@ type ViewPagerAndroidOnPageSelectedEventData  = {
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -12672,12 +13926,11 @@ type ViewPagerAndroidOnPageSelectedEventData  = {
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -12688,6 +13941,8 @@ type ViewPagerAndroidOnPageSelectedEventData  = {
 -- |        Views that are only used to layout their children or otherwise don't draw anything
 -- |        may be automatically removed from the native hierarchy as an optimization.
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -12735,8 +13990,9 @@ type ViewPagerAndroidOnPageSelectedEventData  = {
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -12872,19 +14128,19 @@ type ViewPagerAndroidOnPageSelectedEventData  = {
 -- |         __*platform* ios__
 
 type ViewPagerAndroidProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  collapsable :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
@@ -12893,9 +14149,10 @@ type ViewPagerAndroidProps  =
   ,  keyboardDismissMode :: String
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -12947,16 +14204,9 @@ viewPagerAndroid_ :: Array JSX -> JSX
 viewPagerAndroid_ children = viewPagerAndroid { children }
 
 
--- | see <https://facebook.github.io/react-native/docs/view.html#props>
+-- | see <https://reactnative.dev/docs/view#props>
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -12964,7 +14214,7 @@ viewPagerAndroid_ children = viewPagerAndroid { children }
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -12976,12 +14226,11 @@ viewPagerAndroid_ children = viewPagerAndroid { children }
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
@@ -12992,6 +14241,8 @@ viewPagerAndroid_ children = viewPagerAndroid { children }
 -- |        Views that are only used to layout their children or otherwise don't draw anything
 -- |        may be automatically removed from the native hierarchy as an optimization.
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -13032,8 +14283,9 @@ viewPagerAndroid_ children = viewPagerAndroid { children }
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
@@ -13143,28 +14395,29 @@ viewPagerAndroid_ children = viewPagerAndroid { children }
 -- |         __*platform* ios__
 
 type ViewProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+  ( accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
   ,  collapsable :: Boolean
+  ,  focusable :: Boolean
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
   ,  importantForAccessibility :: String
   ,  isTVSelectable :: Boolean
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
@@ -13222,6 +14475,96 @@ safeAreaView_ :: Array JSX -> JSX
 safeAreaView_ children = safeAreaView { children }
 
 
+type ViewStyle  = {
+    alignContent  :: (Undefinable  String)
+  , alignItems  :: (Undefinable  String)
+  , alignSelf  :: (Undefinable  FlexStyleAlignSelf)
+  , aspectRatio  :: (Undefinable  Number)
+  , backfaceVisibility  :: (Undefinable  String)
+  , backgroundColor  :: (Undefinable  ViewStyleBackgroundColor)
+  , borderBottomColor  :: (Undefinable  ViewStyleBorderBottomColor)
+  , borderBottomEndRadius  :: (Undefinable  Number)
+  , borderBottomLeftRadius  :: (Undefinable  Number)
+  , borderBottomRightRadius  :: (Undefinable  Number)
+  , borderBottomStartRadius  :: (Undefinable  Number)
+  , borderBottomWidth  :: (Undefinable  Number)
+  , borderColor  :: (Undefinable  ViewStyleBorderColor)
+  , borderEndColor  :: (Undefinable  ViewStyleBorderEndColor)
+  , borderEndWidth  :: (Undefinable  String)
+  , borderLeftColor  :: (Undefinable  ViewStyleBorderLeftColor)
+  , borderLeftWidth  :: (Undefinable  Number)
+  , borderRadius  :: (Undefinable  Number)
+  , borderRightColor  :: (Undefinable  ViewStyleBorderRightColor)
+  , borderRightWidth  :: (Undefinable  Number)
+  , borderStartColor  :: (Undefinable  ViewStyleBorderStartColor)
+  , borderStartWidth  :: (Undefinable  String)
+  , borderStyle  :: (Undefinable  String)
+  , borderTopColor  :: (Undefinable  ViewStyleBorderTopColor)
+  , borderTopEndRadius  :: (Undefinable  Number)
+  , borderTopLeftRadius  :: (Undefinable  Number)
+  , borderTopRightRadius  :: (Undefinable  Number)
+  , borderTopStartRadius  :: (Undefinable  Number)
+  , borderTopWidth  :: (Undefinable  Number)
+  , borderWidth  :: (Undefinable  Number)
+  , bottom  :: (Undefinable  String)
+  , direction  :: (Undefinable  String)
+  , display  :: (Undefinable  String)
+  , elevation  :: (Undefinable  Number)
+  , end  :: (Undefinable  String)
+  , flex  :: (Undefinable  Number)
+  , flexBasis  :: (Undefinable  String)
+  , flexDirection  :: (Undefinable  String)
+  , flexGrow  :: (Undefinable  Number)
+  , flexShrink  :: (Undefinable  Number)
+  , flexWrap  :: (Undefinable  String)
+  , height  :: (Undefinable  String)
+  , justifyContent  :: (Undefinable  String)
+  , left  :: (Undefinable  String)
+  , margin  :: (Undefinable  String)
+  , marginBottom  :: (Undefinable  String)
+  , marginEnd  :: (Undefinable  String)
+  , marginHorizontal  :: (Undefinable  String)
+  , marginLeft  :: (Undefinable  String)
+  , marginRight  :: (Undefinable  String)
+  , marginStart  :: (Undefinable  String)
+  , marginTop  :: (Undefinable  String)
+  , marginVertical  :: (Undefinable  String)
+  , maxHeight  :: (Undefinable  String)
+  , maxWidth  :: (Undefinable  String)
+  , minHeight  :: (Undefinable  String)
+  , minWidth  :: (Undefinable  String)
+  , opacity  :: (Undefinable  Number)
+  , overflow  :: (Undefinable  String)
+  , padding  :: (Undefinable  String)
+  , paddingBottom  :: (Undefinable  String)
+  , paddingEnd  :: (Undefinable  String)
+  , paddingHorizontal  :: (Undefinable  String)
+  , paddingLeft  :: (Undefinable  String)
+  , paddingRight  :: (Undefinable  String)
+  , paddingStart  :: (Undefinable  String)
+  , paddingTop  :: (Undefinable  String)
+  , paddingVertical  :: (Undefinable  String)
+  , position  :: (Undefinable  String)
+  , right  :: (Undefinable  String)
+  , rotation  :: (Undefinable  Number)
+  , scaleX  :: (Undefinable  Number)
+  , scaleY  :: (Undefinable  Number)
+  , shadowColor  :: (Undefinable  ShadowStyleIOSShadowColor)
+  , shadowOffset  :: (Undefinable  { width :: Number, height :: Number })
+  , shadowOpacity  :: (Undefinable  Number)
+  , shadowRadius  :: (Undefinable  Number)
+  , start  :: (Undefinable  String)
+  , testID  :: (Undefinable  String)
+  , top  :: (Undefinable  String)
+  , transform  :: (Undefinable  (Array (TransformsStyleTransform)))
+  , transformMatrix  :: (Undefinable  (Array Number))
+  , translateX  :: (Undefinable  Number)
+  , translateY  :: (Undefinable  Number)
+  , width  :: (Undefinable  String)
+  , zIndex  :: (Undefinable  Number)
+}
+
+
 type ViewToken  = {
     index :: String
   , isViewable :: Boolean
@@ -13245,40 +14588,18 @@ type ViewabilityConfigCallbackPair  = {
 }
 
 
-type WebViewIOSLoadRequestEvent  = {
-    canGoBack :: Boolean
-  , canGoForward :: Boolean
-  , loading :: Boolean
-  , lockIdentifier :: Number
-  , navigationType :: String
-  , target :: Number
-  , title :: String
-  , url :: String
-}
-
-
-type WebViewMessageEventData  = {
-    data :: String
-}
-
-
-type WebViewNativeConfig  = {
-    component  :: (Undefinable  Foreign)
-  , props  :: (Undefinable  (Object Foreign))
-  , viewManager  :: (Undefinable  (Object Foreign))
-}
-
-
--- | see <https://facebook.github.io/react-native/docs/webview.html#props>
+-- | see <https://reactnative.dev/docs/virtualizedlist#props>
+-- | - `ListEmptyComponent`
+-- |        Rendered when the list is empty. Can be a React Component Class, a render function, or
+-- |        a rendered element.
+-- | - `ListFooterComponent`
+-- |        Rendered at the bottom of all the items. Can be a React Component Class, a render function, or
+-- |        a rendered element.
+-- | - `ListHeaderComponent`
+-- |        Rendered at the top of all the items. Can be a React Component Class, a render function, or
+-- |        a rendered element.
 -- | - `accessibilityActions`
 -- |        Provides an array of custom actions available for accessibility.
--- |         __*platform* ios__
--- | - `accessibilityComponentType`
--- |        In some cases, we also want to alert the end user of the type of selected component (i.e., that it is a “button”).
--- |        If we were using native buttons, this would work automatically. Since we are using javascript, we need to
--- |        provide a bit more context for TalkBack. To do so, you must specify the ‘accessibilityComponentType’ property
--- |        for any UI component. For instances, we support ‘button’, ‘radiobutton_checked’ and ‘radiobutton_unchecked’ and so on.
--- |         __*platform* android__
 -- | - `accessibilityElementsHidden`
 -- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
 -- |        are hidden to the screen reader.
@@ -13286,7 +14607,7 @@ type WebViewNativeConfig  = {
 -- | - `accessibilityHint`
 -- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
 -- | - `accessibilityIgnoresInvertColors`
--- |        https://facebook.github.io/react-native/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
 -- |         __*platform* ios__
 -- | - `accessibilityLabel`
 -- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
@@ -13298,63 +14619,125 @@ type WebViewNativeConfig  = {
 -- |         __*platform* android__
 -- | - `accessibilityRole`
 -- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
--- | - `accessibilityStates`
+-- | - `accessibilityState`
 -- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
--- | - `accessibilityTraits`
--- |        Accessibility traits tell a person using VoiceOver what kind of element they have selected.
--- |        Is this element a label? A button? A header? These questions are answered by accessibilityTraits.
--- |         __*platform* ios__
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
 -- | - `accessibilityViewIsModal`
 -- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
 -- |         __*platform* ios__
 -- | - `accessible`
 -- |        When true, indicates that the view is an accessibility element.
 -- |        By default, all the touchable elements are accessible.
--- | - `allowFileAccess`
--- |        Sets whether the webview allows access to the file system.
--- | - `allowsInlineMediaPlayback`
--- |        Determines whether HTML5 videos play inline or use the native
--- |        full-screen controller. default value false
--- |        NOTE : "In order * for video to play inline, not only does
--- |        this property need to be set to true, but the video element
--- |        in the HTML document must also include the webkit-playsinline
--- |        attribute."
+-- | - `alwaysBounceHorizontal`
+-- |        When true the scroll view bounces horizontally when it reaches the end
+-- |        even if the content is smaller than the scroll view itself. The default
+-- |        value is true when `horizontal={true}` and false otherwise.
+-- | - `alwaysBounceVertical`
+-- |        When true the scroll view bounces vertically when it reaches the end
+-- |        even if the content is smaller than the scroll view itself. The default
+-- |        value is false when `horizontal={true}` and true otherwise.
 -- | - `automaticallyAdjustContentInsets`
--- |        Controls whether to adjust the content inset for web views that are
--- |        placed behind a navigation bar, tab bar, or toolbar. The default value
--- |        is `true`.
+-- |        Controls whether iOS should automatically adjust the content inset for scroll views that are placed behind a navigation bar or tab bar/ toolbar.
+-- |        The default value is true.
 -- | - `bounces`
--- |        Boolean value that determines whether the web view bounces
--- |        when it reaches the edge of the content. The default value is `true`.
--- |         __*platform* ios__
+-- |        When true the scroll view bounces when it reaches the end of the
+-- |        content if the content is larger then the scroll view along the axis of
+-- |        the scroll direction. When false it disables all bouncing even if
+-- |        the `alwaysBounce*` props are true. The default value is true.
+-- | - `bouncesZoom`
+-- |        When true gestures can drive zoom past min/max and the zoom will animate
+-- |        to the min/max value at gesture end otherwise the zoom will not exceed
+-- |        the limits.
+-- | - `canCancelContentTouches`
+-- |        When false once tracking starts won't try to drag if the touch moves.
+-- |        The default value is true.
+-- | - `centerContent`
+-- |        When true the scroll view automatically centers the content when the
+-- |        content is smaller than the scroll view bounds; when the content is
+-- |        larger than the scroll view this property has no effect. The default
+-- |        value is false.
 -- | - `collapsable`
 -- |        Views that are only used to layout their children or otherwise don't draw anything
 -- |        may be automatically removed from the native hierarchy as an optimization.
 -- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+-- | - `contentContainerStyle`
+-- |        These styles will be applied to the scroll view content container which
+-- |        wraps all of the child views. Example:
+-- |           return (
+-- |             <ScrollView contentContainerStyle={styles.contentContainer}>
+-- |             </ScrollView>
+-- |           );
+-- |           ...
+-- |           const styles = StyleSheet.create({
+-- |             contentContainer: {
+-- |               paddingVertical: 20
+-- |             }
+-- |           });
 -- | - `contentInset`
--- |        The amount by which the web view content is inset from the edges of
--- |        the scroll view. Defaults to {top: 0, left: 0, bottom: 0, right: 0}.
--- | - `dataDetectorTypes`
--- |        Determines the types of data converted to clickable URLs in
--- |        the web view’s content. By default only phone numbers are detected.
--- |        You can provide one type or an array of many types.
--- |        Possible values for `dataDetectorTypes` are:
--- |        - `'phoneNumber'`
--- |        - `'link'`
--- |        - `'address'`
--- |        - `'calendarEvent'`
--- |        - `'none'`
--- |        - `'all'`
+-- |        The amount by which the scroll view content is inset from the edges of the scroll view.
+-- |        Defaults to {0, 0, 0, 0}.
+-- | - `contentInsetAdjustmentBehavior`
+-- |        This property specifies how the safe area insets are used to modify the content area of the scroll view.
+-- |        The default value of this property must be 'automatic'. But the default value is 'never' until RN@0.51.
+-- | - `contentOffset`
+-- |        Used to manually set the starting scroll offset.
+-- |        The default value is {x: 0, y: 0}
+-- | - `data`
+-- |        The default accessor functions assume this is an Array<{key: string}> but you can override
+-- |        getItem, getItemCount, and keyExtractor to handle any type of index-based data.
+-- | - `debug`
+-- |        `debug` will turn on extra logging and visual overlays to aid with debugging both usage and
+-- |        implementation, but with a significant perf hit.
 -- | - `decelerationRate`
--- |        A floating-point number that determines how quickly the scroll
--- |        view decelerates after the user lifts their finger. You may also
--- |        use string shortcuts "normal" and "fast" which match the
--- |        underlying iOS settings for UIScrollViewDecelerationRateNormal
--- |        and UIScrollViewDecelerationRateFast respectively.
--- |        - normal: 0.998 - fast: 0.99 (the default for iOS WebView)
--- | - `domStorageEnabled`
--- |        Used on Android only, controls whether DOM Storage is enabled
--- |        or not android
+-- |        A floating-point number that determines how quickly the scroll view
+-- |        decelerates after the user lifts their finger. You may also use string
+-- |        shortcuts `"normal"` and `"fast"` which match the underlying iOS settings
+-- |        for `UIScrollViewDecelerationRateNormal` and
+-- |        `UIScrollViewDecelerationRateFast` respectively.
+-- |          - `'normal'`: 0.998 on iOS, 0.985 on Android (the default)
+-- |          - `'fast'`: 0.99 on iOS, 0.9 on Android
+-- | - `directionalLockEnabled`
+-- |        When true the ScrollView will try to lock to only vertical or horizontal
+-- |        scrolling while dragging.  The default value is false.
+-- | - `disableIntervalMomentum`
+-- |        When true, the scroll view stops on the next index (in relation to scroll position at release)
+-- |        regardless of how fast the gesture is. This can be used for horizontal pagination when the page
+-- |        is less than the width of the ScrollView. The default value is false.
+-- | - `disableScrollViewPanResponder`
+-- |        When true, the default JS pan responder on the ScrollView is disabled, and full control over
+-- |        touches inside the ScrollView is left to its child components. This is particularly useful
+-- |        if `snapToInterval` is enabled, since it does not follow typical touch patterns. Do not use
+-- |        this on regular ScrollView use cases without `snapToInterval` as it may cause unexpected
+-- |        touches to occur while scrolling. The default value is false.
+-- | - `disableVirtualization`
+-- |        DEPRECATED: Virtualization provides significant performance and memory optimizations, but fully
+-- |        unmounts react instances that are outside of the render window. You should only need to disable
+-- |        this for debugging purposes.
+-- | - `endFillColor`
+-- |        Sometimes a scrollview takes up more space than its content fills.
+-- |        When this is the case, this prop will fill the rest of the
+-- |        scrollview with a color to avoid setting a background and creating
+-- |        unnecessary overdraw. This is an advanced optimization that is not
+-- |        needed in the general case.
+-- | - `extraData`
+-- |        A marker property for telling the list to re-render (since it implements `PureComponent`). If
+-- |        any of your `renderItem`, Header, Footer, etc. functions depend on anything outside of the
+-- |        `data` prop, stick it here and treat it immutably.
+-- | - `fadingEdgeLength`
+-- |        Fades out the edges of the the scroll content.
+-- |        If the value is greater than 0, the fading edges will be set accordingly
+-- |        to the current scroll direction and position,
+-- |        indicating if there is more content to show.
+-- |        The default value is 0.
+-- |         __*platform* android__
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
+-- | - `getItem`
+-- |        A generic accessor for extracting an item from any sort of data blob.
+-- | - `getItemCount`
+-- |        Determines how many items are in the data blob.
 -- | - `hasTVPreferredFocus`
 -- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
 -- |         __*platform* ios__
@@ -13376,27 +14759,71 @@ type WebViewNativeConfig  = {
 -- |              'yes' - The view is important for accessibility.
 -- |              'no' - The view is not important for accessibility.
 -- |              'no-hide-descendants' - The view is not important for accessibility, nor are any of its descendant views.
--- | - `injectedJavaScript`
--- |        Set this to provide JavaScript that will be injected into the web page
--- |        when the view loads.
+-- | - `indicatorStyle`
+-- |        The style of the scroll indicators.
+-- |        - default (the default), same as black.
+-- |        - black, scroll indicator is black. This style is good against
+-- |           a white content background.
+-- |        - white, scroll indicator is white. This style is good against
+-- |           a black content background.
+-- | - `initialNumToRender`
+-- |        How many items to render in the initial batch. This should be enough to fill the screen but not
+-- |        much more. Note these items will never be unmounted as part of the windowed rendering in order
+-- |        to improve perceived performance of scroll-to-top actions.
+-- | - `initialScrollIndex`
+-- |        Instead of starting at the top with the first item, start at `initialScrollIndex`. This
+-- |        disables the "scroll to top" optimization that keeps the first `initialNumToRender` items
+-- |        always rendered and immediately renders the items starting at this initial index. Requires
+-- |        `getItemLayout` to be implemented.
+-- | - `invertStickyHeaders`
+-- |        If sticky headers should stick at the bottom instead of the top of the
+-- |        ScrollView. This is usually used with inverted ScrollViews.
+-- | - `inverted`
+-- |        Reverses the direction of scroll. Uses scale transforms of -1.
 -- | - `isTVSelectable`
 -- |        *(Apple TV only)* When set to true, this view will be focusable
 -- |        and navigable using the Apple TV remote.
 -- |         __*platform* ios__
--- | - `javaScriptEnabled`
--- |        Used for android only, JS is enabled by default for WebView on iOS
--- | - `mediaPlaybackRequiresUserAction`
--- |        Determines whether HTML5 audio & videos require the user to tap
--- |        before they can start playing. The default value is false.
--- | - `mixedContentMode`
--- |        Specifies the mixed content mode. i.e WebView will allow a secure origin to load content from any other origin.
--- |        Possible values for mixedContentMode are:
--- |        'never' (default) - WebView will not allow a secure origin to load content from an insecure origin.
--- |        'always' - WebView will allow a secure origin to load content from any other origin, even if that origin is insecure.
--- |        'compatibility' - WebView will attempt to be compatible with the approach of a modern web browser with regard to mixed content.
--- | - `nativeConfig`
--- |        Override the native component used to render the WebView. Enables a custom native
--- |        WebView which uses the same JavaScript as the original WebView.
+-- | - `keyboardDismissMode`
+-- |        Determines whether the keyboard gets dismissed in response to a drag.
+-- |           - 'none' (the default) drags do not dismiss the keyboard.
+-- |           - 'onDrag' the keyboard is dismissed when a drag begins.
+-- |           - 'interactive' the keyboard is dismissed interactively with the drag
+-- |             and moves in synchrony with the touch; dragging upwards cancels the
+-- |             dismissal.
+-- | - `keyboardShouldPersistTaps`
+-- |        Determines when the keyboard should stay visible after a tap.
+-- |        - 'never' (the default), tapping outside of the focused text input when the keyboard is up dismisses the keyboard. When this happens, children won't receive the tap.
+-- |        - 'always', the keyboard will not dismiss automatically, and the scroll view will not catch taps, but children of the scroll view can catch taps.
+-- |        - 'handled', the keyboard will not dismiss automatically when the tap was handled by a children, (or captured by an ancestor).
+-- |        - false, deprecated, use 'never' instead
+-- |        - true, deprecated, use 'always' instead
+-- | - `maintainVisibleContentPosition`
+-- |        When set, the scroll view will adjust the scroll position so that the first child
+-- |        that is currently visible and at or beyond minIndexForVisible will not change position.
+-- |        This is useful for lists that are loading content in both directions, e.g. a chat thread,
+-- |        where new messages coming in might otherwise cause the scroll position to jump. A value
+-- |        of 0 is common, but other values such as 1 can be used to skip loading spinners or other
+-- |        content that should not maintain position.
+-- |        The optional autoscrollToTopThreshold can be used to make the content automatically scroll
+-- |        to the top after making the adjustment if the user was within the threshold of the top
+-- |        before the adjustment was made. This is also useful for chat-like applications where you
+-- |        want to see new messages scroll into place, but not if the user has scrolled up a ways and
+-- |        it would be disruptive to scroll a bunch.
+-- |        Caveat 1: Reordering elements in the scrollview with this enabled will probably cause
+-- |        jumpiness and jank. It can be fixed, but there are currently no plans to do so. For now,
+-- |        don't re-order the content of any ScrollViews or Lists that use this feature.
+-- |        Caveat 2: This uses contentOffset and frame.origin in native code to compute visibility.
+-- |        Occlusion, transforms, and other complexity won't be taken into account as to whether
+-- |        content is "visible" or not.
+-- | - `maxToRenderPerBatch`
+-- |        The maximum number of items to render in each incremental render batch. The more rendered at
+-- |        once, the better the fill rate, but responsiveness my suffer because rendering content may
+-- |        interfere with responding to button taps or other interactions.
+-- | - `maximumZoomScale`
+-- |        The maximum allowed zoom scale. The default value is 1.0.
+-- | - `minimumZoomScale`
+-- |        The minimum allowed zoom scale. The default value is 1.0.
 -- | - `nativeID`
 -- |        Used to reference react managed views from native code.
 -- | - `needsOffscreenAlphaCompositing`
@@ -13411,29 +14838,27 @@ type WebViewNativeConfig  = {
 -- |        consider combining it with renderToHardwareTextureAndroid if the view contents are static (i.e. it doesn't need to be redrawn each frame).
 -- |        If that property is enabled, this View will be rendered off-screen once,
 -- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
+-- | - `nestedScrollEnabled`
+-- |        Enables nested scrolling for Android API level 21+. Nested scrolling is supported by default on iOS.
 -- | - `onAccessibilityAction`
--- |        When `accessible` is true, the system will try to invoke this function
--- |        when the user performs an accessibility custom action.
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
 -- |         __*platform* ios__
 -- | - `onAccessibilityTap`
 -- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
 -- |         __*platform* ios__
--- | - `onError`
--- |        Invoked when load fails
--- | - `onLayout`
--- |        Invoked on mount and layout changes with
--- |        {nativeEvent: { layout: {x, y, width, height}}}.
--- | - `onLoad`
--- |        Invoked when load finish
--- | - `onLoadEnd`
--- |        Invoked when load either succeeds or fails
--- | - `onLoadStart`
--- |        Invoked on load start
+-- | - `onContentSizeChange`
+-- |        Called when scrollable content view of the ScrollView changes.
+-- |        Handler function is passed the content width and content height as parameters: (contentWidth, contentHeight)
+-- |        It's implemented using onLayout handler attached to the content container which this ScrollView renders.
 -- | - `onMagicTap`
 -- |        When accessible is true, the system will invoke this function when the user performs the magic tap gesture.
 -- |         __*platform* ios__
--- | - `onMessage`
--- |        Invoked when window.postMessage is called from WebView.
+-- | - `onMomentumScrollBegin`
+-- |        Fires when scroll view has begun moving
+-- | - `onMomentumScrollEnd`
+-- |        Fires when scroll view has finished moving
 -- | - `onMoveShouldSetResponder`
 -- |        Called for every touch move on the View when it is not the responder: does this view want to "claim" touch responsiveness?
 -- | - `onMoveShouldSetResponderCapture`
@@ -13447,8 +14872,9 @@ type WebViewNativeConfig  = {
 -- |        it will do a capture phase, firing on*ShouldSetResponderCapture.
 -- |        So if a parent View wants to prevent the child from becoming responder on a touch start,
 -- |        it should have a onStartShouldSetResponderCapture handler which returns true.
--- | - `onNavigationStateChange`
--- |        Function that is invoked when the `WebView` loading starts or ends.
+-- | - `onRefresh`
+-- |        If provided, a standard RefreshControl will be added for "Pull to Refresh" functionality. Make
+-- |        sure to also set the `refreshing` prop correctly.
 -- | - `onResponderEnd`
 -- |        If the View returns true and attempts to become the responder, one of the following will happen:
 -- | - `onResponderGrant`
@@ -13468,10 +14894,22 @@ type WebViewNativeConfig  = {
 -- | - `onResponderTerminationRequest`
 -- |        Something else wants to become responder.
 -- |        Should this view release the responder? Returning true allows release
--- | - `onShouldStartLoadWithRequest`
--- |        Allows custom handling of any webview requests by a JS handler.
--- |        Return true or false from this method to continue loading the
--- |        request.
+-- | - `onScroll`
+-- |        Fires at most once per frame during scrolling.
+-- |        The frequency of the events can be contolled using the scrollEventThrottle prop.
+-- | - `onScrollAnimationEnd`
+-- |        Called when a scrolling animation ends.
+-- | - `onScrollBeginDrag`
+-- |        Fires if a user initiates a scroll gesture.
+-- | - `onScrollEndDrag`
+-- |        Fires when a user has finished scrolling.
+-- | - `onScrollToIndexFailed`
+-- |        Used to handle failures when scrolling to an index that has not been measured yet.
+-- |        Recommended action is to either compute your own offset and `scrollTo` it, or scroll as far
+-- |        as possible and then try again after more items have been rendered.
+-- | - `onScrollToTop`
+-- |        Fires when the scroll view scrolls to top after the status bar has been tapped
+-- |         __*platform* ios__
 -- | - `onStartShouldSetResponder`
 -- |        A view can become the touch responder by implementing the correct negotiation methods.
 -- |        There are two methods to ask the view if it wants to become responder:
@@ -13487,11 +14925,24 @@ type WebViewNativeConfig  = {
 -- |        it will do a capture phase, firing on*ShouldSetResponderCapture.
 -- |        So if a parent View wants to prevent the child from becoming responder on a touch start,
 -- |        it should have a onStartShouldSetResponderCapture handler which returns true.
--- | - `originWhitelist`
--- |        List of origin strings to allow being navigated to.
--- |        The strings allow wildcards and get matched against just the origin (not the full URL).
--- |        If the user taps to navigate to a new page but the new page is not in this whitelist, the URL will be handled by the OS.
--- |        The default whitelisted origins are "http://" and "https://".
+-- | - `onViewableItemsChanged`
+-- |        Called when the viewability of rows changes, as defined by the
+-- |        `viewabilityConfig` prop.
+-- | - `overScrollMode`
+-- |        Used to override default value of overScroll mode.
+-- |           Possible values:
+-- |             - 'auto' - Default value, allow a user to over-scroll this view only if the content is large enough to meaningfully scroll.
+-- |             - 'always' - Always allow a user to over-scroll this view.
+-- |             - 'never' - Never allow a user to over-scroll this view.
+-- | - `pagingEnabled`
+-- |        When true the scroll view stops on multiples of the scroll view's size
+-- |        when scrolling. This can be used for horizontal pagination. The default
+-- |        value is false.
+-- | - `persistentScrollbar`
+-- |        Causes the scrollbars not to turn transparent when they are not in use. The default value is false.
+-- | - `pinchGestureEnabled`
+-- |        When true, ScrollView allows use of pinch gestures to zoom in and out.
+-- |        The default value is true.
 -- | - `pointerEvents`
 -- |        In the absence of auto property, none is much like CSS's none value. box-none is as if you had applied the CSS class:
 -- |        .box-none {
@@ -13509,26 +14960,48 @@ type WebViewNativeConfig  = {
 -- |        }
 -- |        But since pointerEvents does not affect layout/appearance, and we are already deviating from the spec by adding additional modes,
 -- |        we opt to not include pointerEvents on style. On some platforms, we would need to implement it as a className anyways. Using style or not is an implementation detail of the platform.
+-- | - `progressViewOffset`
+-- |        Set this when offset is needed for the loading indicator to show correctly.
+-- |         __*platform* android__
+-- | - `refreshControl`
+-- |        A RefreshControl component, used to provide pull-to-refresh
+-- |        functionality for the ScrollView.
+-- | - `refreshing`
+-- |        Set this true while waiting for new data from a refresh.
 -- | - `removeClippedSubviews`
--- |        This is a special performance property exposed by RCTView and is useful for scrolling content when there are many subviews,
--- |        most of which are offscreen. For this property to be effective, it must be applied to a view that contains many subviews that extend outside its bound.
--- |        The subviews must also have overflow: hidden, as should the containing view (or one of its superviews).
--- | - `renderError`
--- |        Function that returns a view to show if there's an error.
--- | - `renderLoading`
--- |        Function that returns a loading indicator.
+-- |        Note: may have bugs (missing content) in some circumstances - use at your own risk.
+-- |        This may improve scroll performance for large lists.
+-- | - `renderScrollComponent`
+-- |        Render a custom scroll component, e.g. with a differently styled `RefreshControl`.
 -- | - `renderToHardwareTextureAndroid`
 -- |        Whether this view should render itself (and all of its children) into a single hardware texture on the GPU.
 -- |        On Android, this is useful for animations and interactions that only modify opacity, rotation, translation, and/or scale:
 -- |        in those cases, the view doesn't have to be redrawn and display lists don't need to be re-executed. The texture can just be
 -- |        re-used and re-composited with different parameters. The downside is that this can use up limited video memory, so this prop should be set back to false at the end of the interaction/animation.
--- | - `saveFormDataDisabled`
--- |        Controls whether form autocomplete data should be saved
--- | - `scalesPageToFit`
--- |        sets whether the webpage scales to fit the view and the user can change the scale
 -- | - `scrollEnabled`
--- |        Boolean value that determines whether scrolling is enabled in the
--- |        `WebView`. The default value is `true`.
+-- |        When false, the content does not scroll. The default value is true
+-- | - `scrollEventThrottle`
+-- |        This controls how often the scroll event will be fired while scrolling (in events per seconds).
+-- |        A higher number yields better accuracy for code that is tracking the scroll position,
+-- |        but can lead to scroll performance problems due to the volume of information being send over the bridge.
+-- |        The default value is zero, which means the scroll event will be sent only once each time the view is scrolled.
+-- | - `scrollIndicatorInsets`
+-- |        The amount by which the scroll view indicators are inset from the edges of the scroll view.
+-- |        This should normally be set to the same value as the contentInset.
+-- |        Defaults to {0, 0, 0, 0}.
+-- | - `scrollPerfTag`
+-- |        Tag used to log scroll performance on this scroll view. Will force
+-- |        momentum events to be turned on (see sendMomentumEvents). This doesn't do
+-- |        anything out of the box and you need to implement a custom native
+-- |        FpsListener for it to be useful.
+-- |         __*platform* android__
+-- | - `scrollToOverflowEnabled`
+-- |        When true, the scroll view can be programmatically scrolled beyond its
+-- |        content size. The default value is false.
+-- |         __*platform* ios__
+-- | - `scrollsToTop`
+-- |        When true the scroll view scrolls to top when the status bar is tapped.
+-- |        The default value is true.
 -- | - `shouldRasterizeIOS`
 -- |        Whether this view should be rendered as a bitmap before compositing.
 -- |        On iOS, this is useful for animations and interactions that do not modify this component's dimensions nor its children;
@@ -13536,9 +15009,41 @@ type WebViewNativeConfig  = {
 -- |        and quickly composite it during each frame.
 -- |        Rasterization incurs an off-screen drawing pass and the bitmap consumes memory.
 -- |        Test and measure when using this property.
--- | - `startInLoadingState`
--- |        Boolean value that forces the `WebView` to show the loading view
--- |        on the first load.
+-- | - `showsHorizontalScrollIndicator`
+-- |        When true, shows a horizontal scroll indicator.
+-- | - `showsVerticalScrollIndicator`
+-- |        When true, shows a vertical scroll indicator.
+-- | - `snapToAlignment`
+-- |        When `snapToInterval` is set, `snapToAlignment` will define the relationship of the the snapping to the scroll view.
+-- |              - `start` (the default) will align the snap at the left (horizontal) or top (vertical)
+-- |              - `center` will align the snap in the center
+-- |              - `end` will align the snap at the right (horizontal) or bottom (vertical)
+-- | - `snapToEnd`
+-- |        Use in conjunction with `snapToOffsets`. By default, the end of the list counts as a snap
+-- |        offset. Set `snapToEnd` to false to disable this behavior and allow the list to scroll freely
+-- |        between its end and the last `snapToOffsets` offset. The default value is true.
+-- | - `snapToInterval`
+-- |        When set, causes the scroll view to stop at multiples of the value of `snapToInterval`.
+-- |        This can be used for paginating through children that have lengths smaller than the scroll view.
+-- |        Used in combination with `snapToAlignment` and `decelerationRate="fast"`. Overrides less
+-- |        configurable `pagingEnabled` prop.
+-- | - `snapToOffsets`
+-- |        When set, causes the scroll view to stop at the defined offsets. This can be used for
+-- |        paginating through variously sized children that have lengths smaller than the scroll view.
+-- |        Typically used in combination with `decelerationRate="fast"`. Overrides less configurable
+-- |        `pagingEnabled` and `snapToInterval` props.
+-- | - `snapToStart`
+-- |        Use in conjunction with `snapToOffsets`. By default, the beginning of the list counts as a
+-- |        snap offset. Set `snapToStart` to false to disable this behavior and allow the list to scroll
+-- |        freely between its start and the first `snapToOffsets` offset. The default value is true.
+-- | - `stickyHeaderIndices`
+-- |        An array of child indices determining which children get docked to the
+-- |        top of the screen when scrolling. For example passing
+-- |        `stickyHeaderIndices={[0]}` will cause the first child to be fixed to the
+-- |        top of the scroll view. This property is not supported in conjunction
+-- |        with `horizontal={true}`.
+-- | - `style`
+-- |        Style
 -- | - `testID`
 -- |        Used to locate this view in end-to-end tests.
 -- | - `tvParallaxMagnification`
@@ -13556,57 +15061,94 @@ type WebViewNativeConfig  = {
 -- | - `tvParallaxTiltAngle`
 -- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 0.05.
 -- |         __*platform* ios__
--- | - `useWebKit`
--- |        If `true`, use WKWebView instead of UIWebView.
--- | - `userAgent`
--- |        Sets the user-agent for the WebView.
+-- | - `updateCellsBatchingPeriod`
+-- |        Amount of time between low-pri item render batches, e.g. for rendering items quite a ways off
+-- |        screen. Similar fill rate/responsiveness tradeoff as `maxToRenderPerBatch`.
+-- | - `windowSize`
+-- |        Determines the maximum number of items rendered outside of the visible area, in units of
+-- |        visible lengths. So if your list fills the screen, then `windowSize={21}` (the default) will
+-- |        render the visible screen area plus up to 10 screens above and 10 below the viewport. Reducing
+-- |        this number will reduce memory consumption and may improve performance, but will increase the
+-- |        chance that fast scrolling may reveal momentary blank areas of unrendered content.
+-- | - `zoomScale`
+-- |        The current scale of the scroll view content. The default value is 1.0.
 
-type WebViewProps  = 
-  ( accessibilityActions :: (Array String)
-  ,  accessibilityComponentType :: String
+type VirtualizedListProps_optional itemT = 
+  ( "CellRendererComponent" :: JSX
+  ,  "ListEmptyComponent" :: JSX
+  ,  "ListFooterComponent" :: JSX
+  ,  "ListHeaderComponent" :: JSX
+  ,  accessibilityActions :: (Array (Readonly { name :: AccessibilityPropsName, label :: String }))
   ,  accessibilityElementsHidden :: Boolean
   ,  accessibilityHint :: String
   ,  accessibilityIgnoresInvertColors :: Boolean
   ,  accessibilityLabel :: String
   ,  accessibilityLiveRegion :: String
   ,  accessibilityRole :: String
-  ,  accessibilityStates :: (Array String)
-  ,  accessibilityTraits :: (Array String)
+  ,  accessibilityState :: AccessibilityState
+  ,  accessibilityValue :: AccessibilityValue
   ,  accessibilityViewIsModal :: Boolean
   ,  accessible :: Boolean
-  ,  allowFileAccess :: Boolean
-  ,  allowsInlineMediaPlayback :: Boolean
+  ,  alwaysBounceHorizontal :: Boolean
+  ,  alwaysBounceVertical :: Boolean
   ,  automaticallyAdjustContentInsets :: Boolean
   ,  bounces :: Boolean
+  ,  bouncesZoom :: Boolean
+  ,  canCancelContentTouches :: Boolean
+  ,  centerContent :: Boolean
   ,  collapsable :: Boolean
+  ,  contentContainerStyle :: CSS
   ,  contentInset :: Insets
-  ,  dataDetectorTypes :: (Array String)
+  ,  contentInsetAdjustmentBehavior :: String
+  ,  contentOffset :: PointPropType
+  ,  data :: Foreign
+  ,  debug :: Boolean
   ,  decelerationRate :: String
-  ,  domStorageEnabled :: Boolean
+  ,  directionalLockEnabled :: Boolean
+  ,  disableIntervalMomentum :: Boolean
+  ,  disableScrollViewPanResponder :: Boolean
+  ,  disableVirtualization :: Boolean
+  ,  endFillColor :: ScrollViewPropsAndroidEndFillColor
+  ,  extraData :: Foreign
+  ,  fadingEdgeLength :: Number
+  ,  focusable :: Boolean
+  ,  getItem :: (EffectFn2 Foreign Number itemT)
+  ,  getItemCount :: (EffectFn1 Foreign Number)
+  ,  getItemLayout :: (EffectFn2 Foreign Number { length :: Number, offset :: Number, index :: Number })
   ,  hasTVPreferredFocus :: Boolean
   ,  hitSlop :: Insets
-  ,  html :: String
+  ,  horizontal :: String
   ,  importantForAccessibility :: String
-  ,  injectedJavaScript :: String
+  ,  indicatorStyle :: String
+  ,  initialNumToRender :: Number
+  ,  initialScrollIndex :: String
+  ,  invertStickyHeaders :: Boolean
+  ,  inverted :: String
   ,  isTVSelectable :: Boolean
-  ,  javaScriptEnabled :: Boolean
-  ,  mediaPlaybackRequiresUserAction :: Boolean
-  ,  mixedContentMode :: String
-  ,  nativeConfig :: WebViewNativeConfig
+  ,  keyExtractor :: (EffectFn2 itemT Number String)
+  ,  keyboardDismissMode :: String
+  ,  keyboardShouldPersistTaps :: String
+  ,  listKey :: String
+  ,  maintainVisibleContentPosition :: { autoscrollToTopThreshold :: String, minIndexForVisible :: Number }
+  ,  maxToRenderPerBatch :: Number
+  ,  maximumZoomScale :: Number
+  ,  minimumZoomScale :: Number
   ,  nativeID :: String
   ,  needsOffscreenAlphaCompositing :: Boolean
-  ,  onAccessibilityAction :: (Effect Unit)
+  ,  nestedScrollEnabled :: Boolean
+  ,  onAccessibilityAction :: (EffectFn1 (NativeSyntheticEvent (Readonly { actionName :: String })) Unit)
+  ,  onAccessibilityEscape :: (Effect Unit)
   ,  onAccessibilityTap :: (Effect Unit)
-  ,  onError :: (EffectFn1 NavState Unit)
-  ,  onLayout :: (EffectFn1 LayoutChangeEvent Unit)
-  ,  onLoad :: (EffectFn1 NavState Unit)
-  ,  onLoadEnd :: (EffectFn1 NavState Unit)
-  ,  onLoadStart :: (EffectFn1 NavState Unit)
+  ,  onContentSizeChange :: (EffectFn2 Number Number Unit)
+  ,  onEndReached :: ((EffectFn1 { distanceFromEnd :: Number } Unit))
+  ,  onEndReachedThreshold :: String
+  ,  onLayout :: (EffectFn1 (NativeSyntheticEvent { layout :: LayoutRectangle }) Unit)
   ,  onMagicTap :: (Effect Unit)
-  ,  onMessage :: (EffectFn1 (NativeSyntheticEvent WebViewMessageEventData) Unit)
+  ,  onMomentumScrollBegin :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
+  ,  onMomentumScrollEnd :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
   ,  onMoveShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onMoveShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
-  ,  onNavigationStateChange :: (EffectFn1 NavState Unit)
+  ,  onRefresh :: ((Effect Unit))
   ,  onResponderEnd :: (EffectFn1 GestureResponderEvent Unit)
   ,  onResponderGrant :: (EffectFn1 GestureResponderEvent Unit)
   ,  onResponderMove :: (EffectFn1 GestureResponderEvent Unit)
@@ -13615,7 +15157,12 @@ type WebViewProps  =
   ,  onResponderStart :: (EffectFn1 GestureResponderEvent Unit)
   ,  onResponderTerminate :: (EffectFn1 GestureResponderEvent Unit)
   ,  onResponderTerminationRequest :: (EffectFn1 GestureResponderEvent Boolean)
-  ,  onShouldStartLoadWithRequest :: (EffectFn1 WebViewIOSLoadRequestEvent Boolean)
+  ,  onScroll :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
+  ,  onScrollAnimationEnd :: (Effect Unit)
+  ,  onScrollBeginDrag :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
+  ,  onScrollEndDrag :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
+  ,  onScrollToIndexFailed :: (EffectFn1 { index :: Number, highestMeasuredFrameIndex :: Number, averageItemLength :: Number } Unit)
+  ,  onScrollToTop :: (EffectFn1 (NativeSyntheticEvent NativeScrollEvent) Unit)
   ,  onStartShouldSetResponder :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onStartShouldSetResponderCapture :: (EffectFn1 GestureResponderEvent Boolean)
   ,  onTouchCancel :: (EffectFn1 GestureResponderEvent Unit)
@@ -13623,18 +15170,33 @@ type WebViewProps  =
   ,  onTouchEndCapture :: (EffectFn1 GestureResponderEvent Unit)
   ,  onTouchMove :: (EffectFn1 GestureResponderEvent Unit)
   ,  onTouchStart :: (EffectFn1 GestureResponderEvent Unit)
-  ,  originWhitelist :: (Array String)
+  ,  onViewableItemsChanged :: ((EffectFn1 { viewableItems :: (Array ViewToken), changed :: (Array ViewToken) } Unit))
+  ,  overScrollMode :: String
+  ,  pagingEnabled :: Boolean
+  ,  persistentScrollbar :: Boolean
+  ,  pinchGestureEnabled :: Boolean
   ,  pointerEvents :: String
+  ,  progressViewOffset :: Number
+  ,  refreshControl :: JSX
+  ,  refreshing :: String
   ,  removeClippedSubviews :: Boolean
-  ,  renderError :: (Effect JSX)
-  ,  renderLoading :: (Effect JSX)
+  ,  renderScrollComponent :: (EffectFn1 (Record ScrollViewProps) JSX)
   ,  renderToHardwareTextureAndroid :: Boolean
-  ,  saveFormDataDisabled :: Boolean
-  ,  scalesPageToFit :: Boolean
   ,  scrollEnabled :: Boolean
+  ,  scrollEventThrottle :: Number
+  ,  scrollIndicatorInsets :: Insets
+  ,  scrollPerfTag :: String
+  ,  scrollToOverflowEnabled :: Boolean
+  ,  scrollsToTop :: Boolean
   ,  shouldRasterizeIOS :: Boolean
-  ,  source :: (Object Foreign)
-  ,  startInLoadingState :: Boolean
+  ,  showsHorizontalScrollIndicator :: Boolean
+  ,  showsVerticalScrollIndicator :: Boolean
+  ,  snapToAlignment :: String
+  ,  snapToEnd :: Boolean
+  ,  snapToInterval :: Number
+  ,  snapToOffsets :: (Array Number)
+  ,  snapToStart :: Boolean
+  ,  stickyHeaderIndices :: (Array Number)
   ,  style :: CSS
   ,  testID :: String
   ,  tvParallaxMagnification :: Number
@@ -13642,23 +15204,511 @@ type WebViewProps  =
   ,  tvParallaxShiftDistanceX :: Number
   ,  tvParallaxShiftDistanceY :: Number
   ,  tvParallaxTiltAngle :: Number
-  ,  url :: String
-  ,  useWebKit :: Boolean
-  ,  userAgent :: String
+  ,  updateCellsBatchingPeriod :: Number
+  ,  viewabilityConfig :: ViewabilityConfig
+  ,  viewabilityConfigCallbackPairs :: (Array ViewabilityConfigCallbackPair)
+  ,  windowSize :: Number
+  ,  zoomScale :: Number
   ,  key :: String
   ,  children :: Array JSX
   )
 
+-- | see <https://reactnative.dev/docs/virtualizedlist#props>
+-- | - `ListEmptyComponent`
+-- |        Rendered when the list is empty. Can be a React Component Class, a render function, or
+-- |        a rendered element.
+-- | - `ListFooterComponent`
+-- |        Rendered at the bottom of all the items. Can be a React Component Class, a render function, or
+-- |        a rendered element.
+-- | - `ListHeaderComponent`
+-- |        Rendered at the top of all the items. Can be a React Component Class, a render function, or
+-- |        a rendered element.
+-- | - `accessibilityActions`
+-- |        Provides an array of custom actions available for accessibility.
+-- | - `accessibilityElementsHidden`
+-- |        A Boolean value indicating whether the accessibility elements contained within this accessibility element
+-- |        are hidden to the screen reader.
+-- |         __*platform* ios__
+-- | - `accessibilityHint`
+-- |        An accessibility hint helps users understand what will happen when they perform an action on the accessibility element when that result is not obvious from the accessibility label.
+-- | - `accessibilityIgnoresInvertColors`
+-- |        https://reactnative.dev/docs/accessibility#accessibilityignoresinvertcolorsios
+-- |         __*platform* ios__
+-- | - `accessibilityLabel`
+-- |        Overrides the text that's read by the screen reader when the user interacts with the element. By default, the
+-- |        label is constructed by traversing all the children and accumulating all the Text nodes separated by space.
+-- | - `accessibilityLiveRegion`
+-- |        Indicates to accessibility services whether the user should be notified when this view changes.
+-- |        Works for Android API >= 19 only.
+-- |        See http://developer.android.com/reference/android/view/View.html#attr_android:accessibilityLiveRegion for references.
+-- |         __*platform* android__
+-- | - `accessibilityRole`
+-- |        Accessibility Role tells a person using either VoiceOver on iOS or TalkBack on Android the type of element that is focused on.
+-- | - `accessibilityState`
+-- |        Accessibility State tells a person using either VoiceOver on iOS or TalkBack on Android the state of the element currently focused on.
+-- | - `accessibilityValue`
+-- |        Represents the current value of a component. It can be a textual description of a component's value, or for range-based components, such as sliders and progress bars,
+-- |        it contains range information (minimum, current, and maximum).
+-- | - `accessibilityViewIsModal`
+-- |        A Boolean value indicating whether VoiceOver should ignore the elements within views that are siblings of the receiver.
+-- |         __*platform* ios__
+-- | - `accessible`
+-- |        When true, indicates that the view is an accessibility element.
+-- |        By default, all the touchable elements are accessible.
+-- | - `alwaysBounceHorizontal`
+-- |        When true the scroll view bounces horizontally when it reaches the end
+-- |        even if the content is smaller than the scroll view itself. The default
+-- |        value is true when `horizontal={true}` and false otherwise.
+-- | - `alwaysBounceVertical`
+-- |        When true the scroll view bounces vertically when it reaches the end
+-- |        even if the content is smaller than the scroll view itself. The default
+-- |        value is false when `horizontal={true}` and true otherwise.
+-- | - `automaticallyAdjustContentInsets`
+-- |        Controls whether iOS should automatically adjust the content inset for scroll views that are placed behind a navigation bar or tab bar/ toolbar.
+-- |        The default value is true.
+-- | - `bounces`
+-- |        When true the scroll view bounces when it reaches the end of the
+-- |        content if the content is larger then the scroll view along the axis of
+-- |        the scroll direction. When false it disables all bouncing even if
+-- |        the `alwaysBounce*` props are true. The default value is true.
+-- | - `bouncesZoom`
+-- |        When true gestures can drive zoom past min/max and the zoom will animate
+-- |        to the min/max value at gesture end otherwise the zoom will not exceed
+-- |        the limits.
+-- | - `canCancelContentTouches`
+-- |        When false once tracking starts won't try to drag if the touch moves.
+-- |        The default value is true.
+-- | - `centerContent`
+-- |        When true the scroll view automatically centers the content when the
+-- |        content is smaller than the scroll view bounds; when the content is
+-- |        larger than the scroll view this property has no effect. The default
+-- |        value is false.
+-- | - `collapsable`
+-- |        Views that are only used to layout their children or otherwise don't draw anything
+-- |        may be automatically removed from the native hierarchy as an optimization.
+-- |        Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+-- | - `contentContainerStyle`
+-- |        These styles will be applied to the scroll view content container which
+-- |        wraps all of the child views. Example:
+-- |           return (
+-- |             <ScrollView contentContainerStyle={styles.contentContainer}>
+-- |             </ScrollView>
+-- |           );
+-- |           ...
+-- |           const styles = StyleSheet.create({
+-- |             contentContainer: {
+-- |               paddingVertical: 20
+-- |             }
+-- |           });
+-- | - `contentInset`
+-- |        The amount by which the scroll view content is inset from the edges of the scroll view.
+-- |        Defaults to {0, 0, 0, 0}.
+-- | - `contentInsetAdjustmentBehavior`
+-- |        This property specifies how the safe area insets are used to modify the content area of the scroll view.
+-- |        The default value of this property must be 'automatic'. But the default value is 'never' until RN@0.51.
+-- | - `contentOffset`
+-- |        Used to manually set the starting scroll offset.
+-- |        The default value is {x: 0, y: 0}
+-- | - `data`
+-- |        The default accessor functions assume this is an Array<{key: string}> but you can override
+-- |        getItem, getItemCount, and keyExtractor to handle any type of index-based data.
+-- | - `debug`
+-- |        `debug` will turn on extra logging and visual overlays to aid with debugging both usage and
+-- |        implementation, but with a significant perf hit.
+-- | - `decelerationRate`
+-- |        A floating-point number that determines how quickly the scroll view
+-- |        decelerates after the user lifts their finger. You may also use string
+-- |        shortcuts `"normal"` and `"fast"` which match the underlying iOS settings
+-- |        for `UIScrollViewDecelerationRateNormal` and
+-- |        `UIScrollViewDecelerationRateFast` respectively.
+-- |          - `'normal'`: 0.998 on iOS, 0.985 on Android (the default)
+-- |          - `'fast'`: 0.99 on iOS, 0.9 on Android
+-- | - `directionalLockEnabled`
+-- |        When true the ScrollView will try to lock to only vertical or horizontal
+-- |        scrolling while dragging.  The default value is false.
+-- | - `disableIntervalMomentum`
+-- |        When true, the scroll view stops on the next index (in relation to scroll position at release)
+-- |        regardless of how fast the gesture is. This can be used for horizontal pagination when the page
+-- |        is less than the width of the ScrollView. The default value is false.
+-- | - `disableScrollViewPanResponder`
+-- |        When true, the default JS pan responder on the ScrollView is disabled, and full control over
+-- |        touches inside the ScrollView is left to its child components. This is particularly useful
+-- |        if `snapToInterval` is enabled, since it does not follow typical touch patterns. Do not use
+-- |        this on regular ScrollView use cases without `snapToInterval` as it may cause unexpected
+-- |        touches to occur while scrolling. The default value is false.
+-- | - `disableVirtualization`
+-- |        DEPRECATED: Virtualization provides significant performance and memory optimizations, but fully
+-- |        unmounts react instances that are outside of the render window. You should only need to disable
+-- |        this for debugging purposes.
+-- | - `endFillColor`
+-- |        Sometimes a scrollview takes up more space than its content fills.
+-- |        When this is the case, this prop will fill the rest of the
+-- |        scrollview with a color to avoid setting a background and creating
+-- |        unnecessary overdraw. This is an advanced optimization that is not
+-- |        needed in the general case.
+-- | - `extraData`
+-- |        A marker property for telling the list to re-render (since it implements `PureComponent`). If
+-- |        any of your `renderItem`, Header, Footer, etc. functions depend on anything outside of the
+-- |        `data` prop, stick it here and treat it immutably.
+-- | - `fadingEdgeLength`
+-- |        Fades out the edges of the the scroll content.
+-- |        If the value is greater than 0, the fading edges will be set accordingly
+-- |        to the current scroll direction and position,
+-- |        indicating if there is more content to show.
+-- |        The default value is 0.
+-- |         __*platform* android__
+-- | - `focusable`
+-- |        Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
+-- | - `getItem`
+-- |        A generic accessor for extracting an item from any sort of data blob.
+-- | - `getItemCount`
+-- |        Determines how many items are in the data blob.
+-- | - `hasTVPreferredFocus`
+-- |        *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
+-- |         __*platform* ios__
+-- | - `hitSlop`
+-- |        This defines how far a touch event can start away from the view.
+-- |        Typical interface guidelines recommend touch targets that are at least
+-- |        30 - 40 points/density-independent pixels. If a Touchable view has
+-- |        a height of 20 the touchable height can be extended to 40 with
+-- |        hitSlop={{top: 10, bottom: 10, left: 0, right: 0}}
+-- |        NOTE The touch area never extends past the parent view bounds and
+-- |        the Z-index of sibling views always takes precedence if a touch
+-- |        hits two overlapping views.
+-- | - `importantForAccessibility`
+-- |        Controls how view is important for accessibility which is if it fires accessibility events
+-- |        and if it is reported to accessibility services that query the screen.
+-- |        Works for Android only. See http://developer.android.com/reference/android/R.attr.html#importantForAccessibility for references.
+-- |        Possible values:
+-- |              'auto' - The system determines whether the view is important for accessibility - default (recommended).
+-- |              'yes' - The view is important for accessibility.
+-- |              'no' - The view is not important for accessibility.
+-- |              'no-hide-descendants' - The view is not important for accessibility, nor are any of its descendant views.
+-- | - `indicatorStyle`
+-- |        The style of the scroll indicators.
+-- |        - default (the default), same as black.
+-- |        - black, scroll indicator is black. This style is good against
+-- |           a white content background.
+-- |        - white, scroll indicator is white. This style is good against
+-- |           a black content background.
+-- | - `initialNumToRender`
+-- |        How many items to render in the initial batch. This should be enough to fill the screen but not
+-- |        much more. Note these items will never be unmounted as part of the windowed rendering in order
+-- |        to improve perceived performance of scroll-to-top actions.
+-- | - `initialScrollIndex`
+-- |        Instead of starting at the top with the first item, start at `initialScrollIndex`. This
+-- |        disables the "scroll to top" optimization that keeps the first `initialNumToRender` items
+-- |        always rendered and immediately renders the items starting at this initial index. Requires
+-- |        `getItemLayout` to be implemented.
+-- | - `invertStickyHeaders`
+-- |        If sticky headers should stick at the bottom instead of the top of the
+-- |        ScrollView. This is usually used with inverted ScrollViews.
+-- | - `inverted`
+-- |        Reverses the direction of scroll. Uses scale transforms of -1.
+-- | - `isTVSelectable`
+-- |        *(Apple TV only)* When set to true, this view will be focusable
+-- |        and navigable using the Apple TV remote.
+-- |         __*platform* ios__
+-- | - `keyboardDismissMode`
+-- |        Determines whether the keyboard gets dismissed in response to a drag.
+-- |           - 'none' (the default) drags do not dismiss the keyboard.
+-- |           - 'onDrag' the keyboard is dismissed when a drag begins.
+-- |           - 'interactive' the keyboard is dismissed interactively with the drag
+-- |             and moves in synchrony with the touch; dragging upwards cancels the
+-- |             dismissal.
+-- | - `keyboardShouldPersistTaps`
+-- |        Determines when the keyboard should stay visible after a tap.
+-- |        - 'never' (the default), tapping outside of the focused text input when the keyboard is up dismisses the keyboard. When this happens, children won't receive the tap.
+-- |        - 'always', the keyboard will not dismiss automatically, and the scroll view will not catch taps, but children of the scroll view can catch taps.
+-- |        - 'handled', the keyboard will not dismiss automatically when the tap was handled by a children, (or captured by an ancestor).
+-- |        - false, deprecated, use 'never' instead
+-- |        - true, deprecated, use 'always' instead
+-- | - `maintainVisibleContentPosition`
+-- |        When set, the scroll view will adjust the scroll position so that the first child
+-- |        that is currently visible and at or beyond minIndexForVisible will not change position.
+-- |        This is useful for lists that are loading content in both directions, e.g. a chat thread,
+-- |        where new messages coming in might otherwise cause the scroll position to jump. A value
+-- |        of 0 is common, but other values such as 1 can be used to skip loading spinners or other
+-- |        content that should not maintain position.
+-- |        The optional autoscrollToTopThreshold can be used to make the content automatically scroll
+-- |        to the top after making the adjustment if the user was within the threshold of the top
+-- |        before the adjustment was made. This is also useful for chat-like applications where you
+-- |        want to see new messages scroll into place, but not if the user has scrolled up a ways and
+-- |        it would be disruptive to scroll a bunch.
+-- |        Caveat 1: Reordering elements in the scrollview with this enabled will probably cause
+-- |        jumpiness and jank. It can be fixed, but there are currently no plans to do so. For now,
+-- |        don't re-order the content of any ScrollViews or Lists that use this feature.
+-- |        Caveat 2: This uses contentOffset and frame.origin in native code to compute visibility.
+-- |        Occlusion, transforms, and other complexity won't be taken into account as to whether
+-- |        content is "visible" or not.
+-- | - `maxToRenderPerBatch`
+-- |        The maximum number of items to render in each incremental render batch. The more rendered at
+-- |        once, the better the fill rate, but responsiveness my suffer because rendering content may
+-- |        interfere with responding to button taps or other interactions.
+-- | - `maximumZoomScale`
+-- |        The maximum allowed zoom scale. The default value is 1.0.
+-- | - `minimumZoomScale`
+-- |        The minimum allowed zoom scale. The default value is 1.0.
+-- | - `nativeID`
+-- |        Used to reference react managed views from native code.
+-- | - `needsOffscreenAlphaCompositing`
+-- |        Whether this view needs to rendered offscreen and composited with an alpha in order to preserve 100% correct colors and blending behavior.
+-- |        The default (false) falls back to drawing the component and its children
+-- |        with an alpha applied to the paint used to draw each element instead of rendering the full component offscreen and compositing it back with an alpha value.
+-- |        This default may be noticeable and undesired in the case where the View you are setting an opacity on
+-- |        has multiple overlapping elements (e.g. multiple overlapping Views, or text and a background).
+-- |        Rendering offscreen to preserve correct alpha behavior is extremely expensive
+-- |        and hard to debug for non-native developers, which is why it is not turned on by default.
+-- |        If you do need to enable this property for an animation,
+-- |        consider combining it with renderToHardwareTextureAndroid if the view contents are static (i.e. it doesn't need to be redrawn each frame).
+-- |        If that property is enabled, this View will be rendered off-screen once,
+-- |        saved in a hardware texture, and then composited onto the screen with an alpha each frame without having to switch rendering targets on the GPU.
+-- | - `nestedScrollEnabled`
+-- |        Enables nested scrolling for Android API level 21+. Nested scrolling is supported by default on iOS.
+-- | - `onAccessibilityAction`
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs an accessibility custom action.
+-- | - `onAccessibilityEscape`
+-- |        When accessibile is true, the system will invoke this function when the user performs the escape gesture (scrub with two fingers).
+-- |         __*platform* ios__
+-- | - `onAccessibilityTap`
+-- |        When `accessible` is true, the system will try to invoke this function when the user performs accessibility tap gesture.
+-- |         __*platform* ios__
+-- | - `onContentSizeChange`
+-- |        Called when scrollable content view of the ScrollView changes.
+-- |        Handler function is passed the content width and content height as parameters: (contentWidth, contentHeight)
+-- |        It's implemented using onLayout handler attached to the content container which this ScrollView renders.
+-- | - `onMagicTap`
+-- |        When accessible is true, the system will invoke this function when the user performs the magic tap gesture.
+-- |         __*platform* ios__
+-- | - `onMomentumScrollBegin`
+-- |        Fires when scroll view has begun moving
+-- | - `onMomentumScrollEnd`
+-- |        Fires when scroll view has finished moving
+-- | - `onMoveShouldSetResponder`
+-- |        Called for every touch move on the View when it is not the responder: does this view want to "claim" touch responsiveness?
+-- | - `onMoveShouldSetResponderCapture`
+-- |        onStartShouldSetResponder and onMoveShouldSetResponder are called with a bubbling pattern,
+-- |        where the deepest node is called first.
+-- |        That means that the deepest component will become responder when multiple Views return true for *ShouldSetResponder handlers.
+-- |        This is desirable in most cases, because it makes sure all controls and buttons are usable.
+-- |        However, sometimes a parent will want to make sure that it becomes responder.
+-- |        This can be handled by using the capture phase.
+-- |        Before the responder system bubbles up from the deepest component,
+-- |        it will do a capture phase, firing on*ShouldSetResponderCapture.
+-- |        So if a parent View wants to prevent the child from becoming responder on a touch start,
+-- |        it should have a onStartShouldSetResponderCapture handler which returns true.
+-- | - `onRefresh`
+-- |        If provided, a standard RefreshControl will be added for "Pull to Refresh" functionality. Make
+-- |        sure to also set the `refreshing` prop correctly.
+-- | - `onResponderEnd`
+-- |        If the View returns true and attempts to become the responder, one of the following will happen:
+-- | - `onResponderGrant`
+-- |        The View is now responding for touch events.
+-- |        This is the time to highlight and show the user what is happening
+-- | - `onResponderMove`
+-- |        If the view is responding, the following handlers can be called:
+-- |        The user is moving their finger
+-- | - `onResponderReject`
+-- |        Something else is the responder right now and will not release it
+-- | - `onResponderRelease`
+-- |        Fired at the end of the touch, ie "touchUp"
+-- | - `onResponderTerminate`
+-- |        The responder has been taken from the View.
+-- |        Might be taken by other views after a call to onResponderTerminationRequest,
+-- |        or might be taken by the OS without asking (happens with control center/ notification center on iOS)
+-- | - `onResponderTerminationRequest`
+-- |        Something else wants to become responder.
+-- |        Should this view release the responder? Returning true allows release
+-- | - `onScroll`
+-- |        Fires at most once per frame during scrolling.
+-- |        The frequency of the events can be contolled using the scrollEventThrottle prop.
+-- | - `onScrollAnimationEnd`
+-- |        Called when a scrolling animation ends.
+-- | - `onScrollBeginDrag`
+-- |        Fires if a user initiates a scroll gesture.
+-- | - `onScrollEndDrag`
+-- |        Fires when a user has finished scrolling.
+-- | - `onScrollToIndexFailed`
+-- |        Used to handle failures when scrolling to an index that has not been measured yet.
+-- |        Recommended action is to either compute your own offset and `scrollTo` it, or scroll as far
+-- |        as possible and then try again after more items have been rendered.
+-- | - `onScrollToTop`
+-- |        Fires when the scroll view scrolls to top after the status bar has been tapped
+-- |         __*platform* ios__
+-- | - `onStartShouldSetResponder`
+-- |        A view can become the touch responder by implementing the correct negotiation methods.
+-- |        There are two methods to ask the view if it wants to become responder:
+-- |        Does this view want to become responder on the start of a touch?
+-- | - `onStartShouldSetResponderCapture`
+-- |        onStartShouldSetResponder and onMoveShouldSetResponder are called with a bubbling pattern,
+-- |        where the deepest node is called first.
+-- |        That means that the deepest component will become responder when multiple Views return true for *ShouldSetResponder handlers.
+-- |        This is desirable in most cases, because it makes sure all controls and buttons are usable.
+-- |        However, sometimes a parent will want to make sure that it becomes responder.
+-- |        This can be handled by using the capture phase.
+-- |        Before the responder system bubbles up from the deepest component,
+-- |        it will do a capture phase, firing on*ShouldSetResponderCapture.
+-- |        So if a parent View wants to prevent the child from becoming responder on a touch start,
+-- |        it should have a onStartShouldSetResponderCapture handler which returns true.
+-- | - `onViewableItemsChanged`
+-- |        Called when the viewability of rows changes, as defined by the
+-- |        `viewabilityConfig` prop.
+-- | - `overScrollMode`
+-- |        Used to override default value of overScroll mode.
+-- |           Possible values:
+-- |             - 'auto' - Default value, allow a user to over-scroll this view only if the content is large enough to meaningfully scroll.
+-- |             - 'always' - Always allow a user to over-scroll this view.
+-- |             - 'never' - Never allow a user to over-scroll this view.
+-- | - `pagingEnabled`
+-- |        When true the scroll view stops on multiples of the scroll view's size
+-- |        when scrolling. This can be used for horizontal pagination. The default
+-- |        value is false.
+-- | - `persistentScrollbar`
+-- |        Causes the scrollbars not to turn transparent when they are not in use. The default value is false.
+-- | - `pinchGestureEnabled`
+-- |        When true, ScrollView allows use of pinch gestures to zoom in and out.
+-- |        The default value is true.
+-- | - `pointerEvents`
+-- |        In the absence of auto property, none is much like CSS's none value. box-none is as if you had applied the CSS class:
+-- |        .box-none {
+-- |           pointer-events: none;
+-- |        }
+-- |        .box-none * {
+-- |           pointer-events: all;
+-- |        }
+-- |        box-only is the equivalent of
+-- |        .box-only {
+-- |           pointer-events: all;
+-- |        }
+-- |        .box-only * {
+-- |           pointer-events: none;
+-- |        }
+-- |        But since pointerEvents does not affect layout/appearance, and we are already deviating from the spec by adding additional modes,
+-- |        we opt to not include pointerEvents on style. On some platforms, we would need to implement it as a className anyways. Using style or not is an implementation detail of the platform.
+-- | - `progressViewOffset`
+-- |        Set this when offset is needed for the loading indicator to show correctly.
+-- |         __*platform* android__
+-- | - `refreshControl`
+-- |        A RefreshControl component, used to provide pull-to-refresh
+-- |        functionality for the ScrollView.
+-- | - `refreshing`
+-- |        Set this true while waiting for new data from a refresh.
+-- | - `removeClippedSubviews`
+-- |        Note: may have bugs (missing content) in some circumstances - use at your own risk.
+-- |        This may improve scroll performance for large lists.
+-- | - `renderScrollComponent`
+-- |        Render a custom scroll component, e.g. with a differently styled `RefreshControl`.
+-- | - `renderToHardwareTextureAndroid`
+-- |        Whether this view should render itself (and all of its children) into a single hardware texture on the GPU.
+-- |        On Android, this is useful for animations and interactions that only modify opacity, rotation, translation, and/or scale:
+-- |        in those cases, the view doesn't have to be redrawn and display lists don't need to be re-executed. The texture can just be
+-- |        re-used and re-composited with different parameters. The downside is that this can use up limited video memory, so this prop should be set back to false at the end of the interaction/animation.
+-- | - `scrollEnabled`
+-- |        When false, the content does not scroll. The default value is true
+-- | - `scrollEventThrottle`
+-- |        This controls how often the scroll event will be fired while scrolling (in events per seconds).
+-- |        A higher number yields better accuracy for code that is tracking the scroll position,
+-- |        but can lead to scroll performance problems due to the volume of information being send over the bridge.
+-- |        The default value is zero, which means the scroll event will be sent only once each time the view is scrolled.
+-- | - `scrollIndicatorInsets`
+-- |        The amount by which the scroll view indicators are inset from the edges of the scroll view.
+-- |        This should normally be set to the same value as the contentInset.
+-- |        Defaults to {0, 0, 0, 0}.
+-- | - `scrollPerfTag`
+-- |        Tag used to log scroll performance on this scroll view. Will force
+-- |        momentum events to be turned on (see sendMomentumEvents). This doesn't do
+-- |        anything out of the box and you need to implement a custom native
+-- |        FpsListener for it to be useful.
+-- |         __*platform* android__
+-- | - `scrollToOverflowEnabled`
+-- |        When true, the scroll view can be programmatically scrolled beyond its
+-- |        content size. The default value is false.
+-- |         __*platform* ios__
+-- | - `scrollsToTop`
+-- |        When true the scroll view scrolls to top when the status bar is tapped.
+-- |        The default value is true.
+-- | - `shouldRasterizeIOS`
+-- |        Whether this view should be rendered as a bitmap before compositing.
+-- |        On iOS, this is useful for animations and interactions that do not modify this component's dimensions nor its children;
+-- |        for example, when translating the position of a static view, rasterization allows the renderer to reuse a cached bitmap of a static view
+-- |        and quickly composite it during each frame.
+-- |        Rasterization incurs an off-screen drawing pass and the bitmap consumes memory.
+-- |        Test and measure when using this property.
+-- | - `showsHorizontalScrollIndicator`
+-- |        When true, shows a horizontal scroll indicator.
+-- | - `showsVerticalScrollIndicator`
+-- |        When true, shows a vertical scroll indicator.
+-- | - `snapToAlignment`
+-- |        When `snapToInterval` is set, `snapToAlignment` will define the relationship of the the snapping to the scroll view.
+-- |              - `start` (the default) will align the snap at the left (horizontal) or top (vertical)
+-- |              - `center` will align the snap in the center
+-- |              - `end` will align the snap at the right (horizontal) or bottom (vertical)
+-- | - `snapToEnd`
+-- |        Use in conjunction with `snapToOffsets`. By default, the end of the list counts as a snap
+-- |        offset. Set `snapToEnd` to false to disable this behavior and allow the list to scroll freely
+-- |        between its end and the last `snapToOffsets` offset. The default value is true.
+-- | - `snapToInterval`
+-- |        When set, causes the scroll view to stop at multiples of the value of `snapToInterval`.
+-- |        This can be used for paginating through children that have lengths smaller than the scroll view.
+-- |        Used in combination with `snapToAlignment` and `decelerationRate="fast"`. Overrides less
+-- |        configurable `pagingEnabled` prop.
+-- | - `snapToOffsets`
+-- |        When set, causes the scroll view to stop at the defined offsets. This can be used for
+-- |        paginating through variously sized children that have lengths smaller than the scroll view.
+-- |        Typically used in combination with `decelerationRate="fast"`. Overrides less configurable
+-- |        `pagingEnabled` and `snapToInterval` props.
+-- | - `snapToStart`
+-- |        Use in conjunction with `snapToOffsets`. By default, the beginning of the list counts as a
+-- |        snap offset. Set `snapToStart` to false to disable this behavior and allow the list to scroll
+-- |        freely between its start and the first `snapToOffsets` offset. The default value is true.
+-- | - `stickyHeaderIndices`
+-- |        An array of child indices determining which children get docked to the
+-- |        top of the screen when scrolling. For example passing
+-- |        `stickyHeaderIndices={[0]}` will cause the first child to be fixed to the
+-- |        top of the scroll view. This property is not supported in conjunction
+-- |        with `horizontal={true}`.
+-- | - `style`
+-- |        Style
+-- | - `testID`
+-- |        Used to locate this view in end-to-end tests.
+-- | - `tvParallaxMagnification`
+-- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 1.0.
+-- |         __*platform* ios__
+-- | - `tvParallaxProperties`
+-- |        *(Apple TV only)* Object with properties to control Apple TV parallax effects.
+-- |         __*platform* ios__
+-- | - `tvParallaxShiftDistanceX`
+-- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 2.0.
+-- |         __*platform* ios__
+-- | - `tvParallaxShiftDistanceY`
+-- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 2.0.
+-- |         __*platform* ios__
+-- | - `tvParallaxTiltAngle`
+-- |        *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 0.05.
+-- |         __*platform* ios__
+-- | - `updateCellsBatchingPeriod`
+-- |        Amount of time between low-pri item render batches, e.g. for rendering items quite a ways off
+-- |        screen. Similar fill rate/responsiveness tradeoff as `maxToRenderPerBatch`.
+-- | - `windowSize`
+-- |        Determines the maximum number of items rendered outside of the visible area, in units of
+-- |        visible lengths. So if your list fills the screen, then `windowSize={21}` (the default) will
+-- |        render the visible screen area plus up to 10 screens above and 10 below the viewport. Reducing
+-- |        this number will reduce memory consumption and may improve performance, but will increase the
+-- |        chance that fast scrolling may reveal momentary blank areas of unrendered content.
+-- | - `zoomScale`
+-- |        The current scale of the scroll view content. The default value is 1.0.
 
-webView
-  :: forall attrs attrs_  
-  . Union attrs attrs_ (WebViewProps  )
-  => Record attrs
+type VirtualizedListProps_required itemT  optional = 
+  ( renderItem :: JSX
+  | optional
+  )
+
+
+virtualizedList
+  :: forall attrs attrs_ itemT 
+  . Union attrs attrs_ (VirtualizedListProps_optional itemT )
+  => Record ((VirtualizedListProps_required itemT ) attrs)
   -> JSX
-webView props = unsafeCreateNativeElement "WebView" props
- 
-
-webView_ :: Array JSX -> JSX
-webView_ children = webView { children }
+virtualizedList props = unsafeCreateNativeElement "VirtualizedList" props
 
 
